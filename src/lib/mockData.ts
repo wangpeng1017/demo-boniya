@@ -2,10 +2,16 @@ import { SalesData, SalesForecast, Store, Product, CompetitorPrice, CustomerFeed
 
 // 门店数据
 export const mockStores: Store[] = [
-  { id: '1', name: '青岛市城阳区利客来城阳直营专柜', address: '青岛市城阳区', region: '青岛办事处', status: 'active' },
-  { id: '2', name: '青岛市市北区家乐福专柜', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
-  { id: '3', name: '济南市历下区银座专柜', address: '济南市历下区', region: '济南办事处', status: 'active' },
-  { id: '4', name: '烟台市芝罘区大润发专柜', address: '烟台市芝罘区', region: '烟台办事处', status: 'active' },
+  { id: '1', name: '利客来城阳直营专柜', address: '青岛市城阳区', region: '青岛办事处', status: 'active' },
+  { id: '2', name: '家乐福市北专柜', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
+  { id: '3', name: '银座历下专柜', address: '济南市历下区', region: '济南办事处', status: 'active' },
+  { id: '4', name: '大润发芝罘专柜', address: '烟台市芝罘区', region: '烟台办事处', status: 'active' },
+  { id: '5', name: '华联即墨专柜', address: '青岛市即墨区', region: '青岛办事处', status: 'active' },
+  { id: '6', name: '沃尔玛李沧专柜', address: '青岛市李沧区', region: '青岛办事处', status: 'active' },
+  { id: '7', name: '银座槐荫专柜', address: '济南市槐荫区', region: '济南办事处', status: 'active' },
+  { id: '8', name: '大润发历城专柜', address: '济南市历城区', region: '济南办事处', status: 'active' },
+  { id: '9', name: '家乐福莱山专柜', address: '烟台市莱山区', region: '烟台办事处', status: 'active' },
+  { id: '10', name: '华联福山专柜', address: '烟台市福山区', region: '烟台办事处', status: 'active' },
 ]
 
 // 产品数据
@@ -164,5 +170,87 @@ export function generateMockSalesData(days: number = 30): SalesData[] {
     })
   }
   
+  return data
+}
+
+// 预测列表数据接口
+export interface ForecastListItem {
+  id: string
+  city: string
+  district: string
+  storeName: string
+  productName: string
+  productCategory: string
+  t1: number  // T+1 明天
+  t2: number  // T+2 后天
+  t3: number  // T+3
+  t4: number  // T+4
+  t5: number  // T+5
+  t6: number  // T+6
+  t7: number  // T+7
+  trend: 'up' | 'down' | 'stable'  // 趋势
+  confidence: number  // 置信度
+  lastUpdated: string
+}
+
+// 生成预测列表数据
+export function generateForecastListData(): ForecastListItem[] {
+  const data: ForecastListItem[] = []
+
+  mockStores.forEach(store => {
+    // 解析城市和区域
+    const addressParts = store.address.split(/[市区]/)
+    const city = addressParts[0] + '市'
+    const district = addressParts[1] + '区'
+
+    mockProducts.forEach(product => {
+      // 基础销量（根据产品类别调整）
+      const baseQuantity = product.category === '烤肠类' ? 25 : 15
+      const variation = 0.2 // 20%的变化幅度
+
+      // 生成7天的预测数据
+      const forecasts: number[] = []
+      let currentBase = baseQuantity + (Math.random() - 0.5) * baseQuantity * variation
+
+      for (let i = 0; i < 7; i++) {
+        // 模拟趋势变化
+        const trendFactor = 1 + (Math.random() - 0.5) * 0.1 // ±5%的日变化
+        const weekendBoost = (i === 5 || i === 6) ? 1.3 : 1 // 周末销量提升
+        const seasonalFactor = 1 + Math.sin(i * 0.5) * 0.05 // 微小的季节性变化
+
+        currentBase *= trendFactor
+        const dailyForecast = currentBase * weekendBoost * seasonalFactor
+        forecasts.push(Math.round(dailyForecast * 100) / 100)
+      }
+
+      // 计算趋势
+      const firstHalf = (forecasts[0] + forecasts[1] + forecasts[2]) / 3
+      const secondHalf = (forecasts[4] + forecasts[5] + forecasts[6]) / 3
+      let trend: 'up' | 'down' | 'stable' = 'stable'
+
+      if (secondHalf > firstHalf * 1.05) trend = 'up'
+      else if (secondHalf < firstHalf * 0.95) trend = 'down'
+
+      data.push({
+        id: `${store.id}-${product.id}`,
+        city,
+        district,
+        storeName: store.name,
+        productName: product.name,
+        productCategory: product.category,
+        t1: forecasts[0],
+        t2: forecasts[1],
+        t3: forecasts[2],
+        t4: forecasts[3],
+        t5: forecasts[4],
+        t6: forecasts[5],
+        t7: forecasts[6],
+        trend,
+        confidence: 0.85 + Math.random() * 0.12,
+        lastUpdated: new Date().toISOString()
+      })
+    })
+  })
+
   return data
 }

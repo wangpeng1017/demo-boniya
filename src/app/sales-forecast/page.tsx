@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BarChart3, TrendingUp, Calendar, Store, Package, Download, Sparkles } from 'lucide-react'
+import { BarChart3, TrendingUp, Calendar, Store, Package, Download, Sparkles, List } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { mockStores, mockProducts, generateMockSalesData } from '@/lib/mockData'
 import { formatCurrency, formatNumber, delay } from '@/lib/utils'
+import ForecastListView from '@/components/sales-forecast/ForecastListView'
 
 interface ForecastData {
   date: string
@@ -21,6 +22,7 @@ interface AIReport {
 }
 
 export default function SalesForecastPage() {
+  const [activeTab, setActiveTab] = useState<'analysis' | 'list'>('analysis')
   const [selectedStore, setSelectedStore] = useState(mockStores[0].id)
   const [selectedProduct, setSelectedProduct] = useState(mockProducts[0].id)
   const [dateRange, setDateRange] = useState({ start: '2025-09-01', end: '2025-09-07' })
@@ -110,18 +112,53 @@ export default function SalesForecastPage() {
           </h1>
           <p className="text-gray-600 mt-1">基于AI算法的精准销量预测与智能分析</p>
         </div>
-        <button
-          onClick={generateAIReport}
-          disabled={isGeneratingReport}
-          className="btn-primary flex items-center"
-        >
-          <Sparkles className="w-4 h-4 mr-2" />
-          {isGeneratingReport ? '生成中...' : '生成AI分析报告'}
-        </button>
+        {activeTab === 'analysis' && (
+          <button
+            onClick={generateAIReport}
+            disabled={isGeneratingReport}
+            className="btn-primary flex items-center"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {isGeneratingReport ? '生成中...' : '生成AI分析报告'}
+          </button>
+        )}
       </div>
 
-      {/* 筛选器 */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      {/* 标签页导航 */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8 px-6">
+            <button
+              onClick={() => setActiveTab('analysis')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'analysis'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4 inline mr-2" />
+              趋势分析
+            </button>
+            <button
+              onClick={() => setActiveTab('list')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'list'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <List className="w-4 h-4 inline mr-2" />
+              预测列表
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {/* 标签页内容 */}
+      {activeTab === 'analysis' && (
+        <>
+          {/* 筛选器 */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">预测参数设置</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
@@ -287,6 +324,13 @@ export default function SalesForecastPage() {
             <span className="text-gray-600">AI正在分析数据并生成报告...</span>
           </div>
         </div>
+      )}
+        </>
+      )}
+
+      {/* 预测列表视图 */}
+      {activeTab === 'list' && (
+        <ForecastListView />
       )}
     </div>
   )
