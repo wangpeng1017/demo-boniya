@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Camera, MapPin, Upload, Search, Filter, TrendingUp, AlertCircle, CheckCircle, Edit, Download, FileSpreadsheet, Plus, Eye } from 'lucide-react'
+import { Camera, MapPin, Upload, Search, Filter, TrendingUp, AlertCircle, CheckCircle, Edit, Download, FileSpreadsheet, Plus, Eye, BarChart3 } from 'lucide-react'
 import { mockCompetitorPrices } from '@/lib/mockData'
 import { formatCurrency, delay, formatDateTime } from '@/lib/utils'
 import { CompetitorPrice } from '@/types'
 import DataEditModal from '@/components/competitor-analysis/DataEditModal'
 import FileImportModal from '@/components/competitor-analysis/FileImportModal'
+import AIAnalysisReport from '@/components/competitor-analysis/AIAnalysisReport'
 
 interface OCRResult {
   id: string
@@ -36,6 +37,7 @@ export default function CompetitorAnalysisPage() {
   const [importModalOpen, setImportModalOpen] = useState(false)
   const [importType, setImportType] = useState<'our-products' | 'competitor-products'>('our-products')
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null)
+  const [aiReportOpen, setAiReportOpen] = useState(false)
 
   const locations = ['全部', '青岛办事处', '济南办事处', '烟台办事处', '城阳即墨']
   const brands = ['全部', '喜旺', '双汇', '金锣', '其他']
@@ -409,6 +411,13 @@ export default function CompetitorAnalysisPage() {
                   <h3 className="text-lg font-semibold text-gray-900">数据管理</h3>
                   <div className="flex flex-wrap gap-2">
                     <button
+                      onClick={() => setAiReportOpen(true)}
+                      className="btn-primary text-sm flex items-center bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    >
+                      <BarChart3 className="w-4 h-4 mr-1" />
+                      生成AI分析报告
+                    </button>
+                    <button
                       onClick={() => {
                         setImportType('our-products')
                         setImportModalOpen(true)
@@ -430,7 +439,7 @@ export default function CompetitorAnalysisPage() {
                     </button>
                     <button
                       onClick={handleExportData}
-                      className="btn-primary text-sm flex items-center"
+                      className="btn-secondary text-sm flex items-center"
                     >
                       <Download className="w-4 h-4 mr-1" />
                       导出表格
@@ -560,6 +569,15 @@ export default function CompetitorAnalysisPage() {
         onImport={handleImportData}
         type={importType}
         title={importType === 'our-products' ? '导入本品价格' : '导入竞品价格'}
+      />
+
+      {/* AI分析报告模态框 */}
+      <AIAnalysisReport
+        isOpen={aiReportOpen}
+        onClose={() => setAiReportOpen(false)}
+        data={competitorData}
+        selectedLocation={selectedLocation}
+        selectedBrand={selectedBrand}
       />
 
       {/* 通知组件 */}
