@@ -37,12 +37,12 @@ export default function ForecastListView() {
 
   // 获取筛选选项
   const filterOptions = useMemo(() => {
-    const cities = [...new Set(data.map(item => item.city))].sort()
-    const districts = [...new Set(data.map(item => item.district))].sort()
-    const stores = [...new Set(data.map(item => item.storeName))].sort()
-    const products = [...new Set(data.map(item => item.productName))].sort()
-    const categories = [...new Set(data.map(item => item.productCategory))].sort()
-    
+    const cities = Array.from(new Set(data.map(item => item.city))).sort()
+    const districts = Array.from(new Set(data.map(item => item.district))).sort()
+    const stores = Array.from(new Set(data.map(item => item.storeName))).sort()
+    const products = Array.from(new Set(data.map(item => item.productName))).sort()
+    const categories = Array.from(new Set(data.map(item => item.productCategory))).sort()
+
     return { cities, districts, stores, products, categories }
   }, [data])
 
@@ -125,8 +125,8 @@ export default function ForecastListView() {
 
   // 统计数据
   const statistics = useMemo(() => {
-    const totalStores = new Set(filteredData.map(item => item.storeName)).size
-    const totalProducts = new Set(filteredData.map(item => item.productName)).size
+    const totalStores = Array.from(new Set(filteredData.map(item => item.storeName))).length
+    const totalProducts = Array.from(new Set(filteredData.map(item => item.productName))).length
     const totalT1 = filteredData.reduce((sum, item) => sum + item.t1, 0)
     const totalT7 = filteredData.reduce((sum, item) => sum + item.t7, 0)
     
