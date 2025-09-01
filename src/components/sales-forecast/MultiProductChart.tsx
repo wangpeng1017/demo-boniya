@@ -17,13 +17,6 @@ interface MultiProductChartProps {
 }
 
 export default function MultiProductChart({ forecastData, selectedProducts, chartColors }: MultiProductChartProps) {
-  // 调试信息
-  console.log('MultiProductChart props:', {
-    forecastDataKeys: Object.keys(forecastData),
-    selectedProducts,
-    chartColors
-  })
-
   // 合并所有商品的数据到一个数组中
   const mergedData = () => {
     if (selectedProducts.length === 0) return []

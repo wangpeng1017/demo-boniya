@@ -126,7 +126,6 @@ export default function SalesForecastPage() {
       allData[productId] = data
     })
 
-    console.log('Generated forecast data:', allData)
     setForecastData(allData)
     setIsLoading(false)
   }
