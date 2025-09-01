@@ -27,7 +27,7 @@ const mockSuggestions: ProductSuggestion[] = [
     platform: '天猫',
     relatedProduct: '维也纳香肠',
     suggestionContent: '建议推出小包装规格，适合单身人群消费',
-    submittedAt: '2025-08-30T14:30:00Z',
+    submittedAt: '2025-01-08T14:30:00Z',
     adoptionStatus: 'under_review',
     submittedBy: '用户张三',
     reviewedBy: '产品经理李四'
@@ -37,18 +37,18 @@ const mockSuggestions: ProductSuggestion[] = [
     platform: '京东',
     relatedProduct: '猪头肉',
     suggestionContent: '希望能增加无添加剂版本，更健康',
-    submittedAt: '2025-08-29T16:20:00Z',
+    submittedAt: '2025-01-07T16:20:00Z',
     adoptionStatus: 'adopted',
     submittedBy: '用户王五',
     reviewedBy: '产品经理李四',
-    reviewedAt: '2025-08-30T10:00:00Z'
+    reviewedAt: '2025-01-08T10:00:00Z'
   },
   {
     id: 'PS003',
     platform: '拼多多',
     relatedProduct: '蒜味烤肠',
     suggestionContent: '建议推出微辣版本，满足不同口味需求',
-    submittedAt: '2025-08-28T11:15:00Z',
+    submittedAt: '2025-01-06T11:15:00Z',
     adoptionStatus: 'pending',
     submittedBy: '用户赵六'
   },
@@ -57,20 +57,121 @@ const mockSuggestions: ProductSuggestion[] = [
     platform: '淘宝',
     relatedProduct: '火腿肠',
     suggestionContent: '包装设计可以更年轻化，吸引年轻消费者',
-    submittedAt: '2025-08-27T09:45:00Z',
+    submittedAt: '2025-01-05T09:45:00Z',
     adoptionStatus: 'rejected',
     submittedBy: '用户孙七',
     reviewedBy: '产品经理李四',
-    reviewedAt: '2025-08-29T15:30:00Z'
+    reviewedAt: '2025-01-06T15:30:00Z'
   },
   {
     id: 'PS005',
     platform: '抖音商城',
     relatedProduct: '酱猪耳',
     suggestionContent: '建议开发即食包装，方便办公室食用',
-    submittedAt: '2025-08-26T13:20:00Z',
+    submittedAt: '2025-01-04T13:20:00Z',
     adoptionStatus: 'under_review',
     submittedBy: '用户周八'
+  },
+  {
+    id: 'PS006',
+    platform: '天猫',
+    relatedProduct: '培根',
+    suggestionContent: '建议推出低盐版本，适合老年人和高血压人群',
+    submittedAt: '2025-01-03T10:15:00Z',
+    adoptionStatus: 'adopted',
+    submittedBy: '用户李明',
+    reviewedBy: '产品经理张华',
+    reviewedAt: '2025-01-04T14:20:00Z'
+  },
+  {
+    id: 'PS007',
+    platform: '京东',
+    relatedProduct: '肉枣肠',
+    suggestionContent: '包装上增加营养成分表，方便消费者了解产品信息',
+    submittedAt: '2025-01-02T15:45:00Z',
+    adoptionStatus: 'under_review',
+    submittedBy: '用户陈红',
+    reviewedBy: '产品经理王强'
+  },
+  {
+    id: 'PS008',
+    platform: '拼多多',
+    relatedProduct: '维也纳香肠',
+    suggestionContent: '建议开发儿童版本，口味更温和，包装更卡通',
+    submittedAt: '2025-01-01T12:30:00Z',
+    adoptionStatus: 'pending',
+    submittedBy: '用户刘芳'
+  },
+  {
+    id: 'PS009',
+    platform: '淘宝',
+    relatedProduct: '蒜味烤肠',
+    suggestionContent: '建议推出礼盒装，适合节日送礼',
+    submittedAt: '2024-12-31T16:10:00Z',
+    adoptionStatus: 'adopted',
+    submittedBy: '用户黄伟',
+    reviewedBy: '产品经理李四',
+    reviewedAt: '2025-01-02T09:30:00Z'
+  },
+  {
+    id: 'PS010',
+    platform: '抖音商城',
+    relatedProduct: '火腿肠',
+    suggestionContent: '建议增加素食版本，满足素食主义者需求',
+    submittedAt: '2024-12-30T11:25:00Z',
+    adoptionStatus: 'under_review',
+    submittedBy: '用户马丽',
+    reviewedBy: '产品经理张华'
+  },
+  {
+    id: 'PS011',
+    platform: '天猫',
+    relatedProduct: '酱猪耳',
+    suggestionContent: '建议推出真空包装版本，延长保质期',
+    submittedAt: '2024-12-29T14:50:00Z',
+    adoptionStatus: 'rejected',
+    submittedBy: '用户吴强',
+    reviewedBy: '产品经理王强',
+    reviewedAt: '2024-12-30T16:15:00Z'
+  },
+  {
+    id: 'PS012',
+    platform: '京东',
+    relatedProduct: '猪头肉',
+    suggestionContent: '建议开发分装版本，一次一份，避免浪费',
+    submittedAt: '2024-12-28T09:40:00Z',
+    adoptionStatus: 'pending',
+    submittedBy: '用户郑敏'
+  },
+  {
+    id: 'PS013',
+    platform: '拼多多',
+    relatedProduct: '培根',
+    suggestionContent: '建议推出烟熏味和原味两种选择',
+    submittedAt: '2024-12-27T13:15:00Z',
+    adoptionStatus: 'adopted',
+    submittedBy: '用户林涛',
+    reviewedBy: '产品经理张华',
+    reviewedAt: '2024-12-28T11:20:00Z'
+  },
+  {
+    id: 'PS014',
+    platform: '淘宝',
+    relatedProduct: '肉枣肠',
+    suggestionContent: '建议增加辣味版本，满足喜欢吃辣的消费者',
+    submittedAt: '2024-12-26T17:35:00Z',
+    adoptionStatus: 'under_review',
+    submittedBy: '用户何静',
+    reviewedBy: '产品经理李四'
+  },
+  {
+    id: 'PS015',
+    platform: '抖音商城',
+    relatedProduct: '维也纳香肠',
+    suggestionContent: '建议推出有机版本，迎合健康饮食趋势',
+    submittedAt: '2024-12-25T08:20:00Z',
+    adoptionStatus: 'pending',
+    submittedBy: '用户谢亮'
   }
 ]
 
