@@ -66,39 +66,59 @@ export const mockSalesForecasts: SalesForecast[] = [
 ]
 
 // 竞品价格数据
-export const mockCompetitorPrices: CompetitorPrice[] = [
-  {
-    id: '1',
-    captureDate: '2025-08-30',
-    location: '青岛办事处',
-    brand: '喜旺',
-    productName: '手掰肉老火腿 340g',
-    specifications: '340g',
-    price: 22.9,
-    sourceType: 'ocr',
-    rawText: '喜旺手掰肉老火腿340g 22.9元'
-  },
-  {
-    id: '2',
-    captureDate: '2025-08-30',
-    location: '青岛办事处',
-    brand: '喜旺',
-    productName: '无淀粉大肉块火腿 340g',
-    specifications: '340g',
-    price: 26.9,
-    sourceType: 'ocr'
-  },
-  {
-    id: '3',
-    captureDate: '2025-08-30',
-    location: '青岛办事处',
-    brand: '喜旺',
-    productName: '喜旺烤肠 160g',
-    specifications: '160g',
-    price: 7.9,
-    sourceType: 'manual'
+// 生成扩展的竞品价格数据
+export function generateExtendedCompetitorPrices(): CompetitorPrice[] {
+  const locations = ['青岛办事处', '济南办事处', '烟台办事处', '城阳即墨']
+  const brands = ['喜旺', '双汇', '金锣', '雨润', '得利斯', '春都', '美好', '龙大']
+  const products = [
+    { name: '手掰肉老火腿', specs: '340g', basePrice: 22.9 },
+    { name: '无淀粉大肉块火腿', specs: '340g', basePrice: 26.9 },
+    { name: '烤肠', specs: '160g', basePrice: 7.9 },
+    { name: '维也纳香肠', specs: '340g', basePrice: 19.9 },
+    { name: '猪头肉', specs: '500g', basePrice: 42.0 },
+    { name: '酱猪耳', specs: '200g', basePrice: 15.8 },
+    { name: '蒜味烤肠', specs: '160g', basePrice: 8.5 },
+    { name: '肉枣肠', specs: '240g', basePrice: 12.9 },
+    { name: '培根', specs: '200g', basePrice: 18.5 },
+    { name: '火腿肠', specs: '30g*10', basePrice: 9.9 },
+    { name: '玉米热狗肠', specs: '240g', basePrice: 13.8 },
+    { name: '鸡肉肠', specs: '160g', basePrice: 6.9 }
+  ]
+
+  const extendedData: CompetitorPrice[] = []
+
+  // 生成30条数据
+  for (let i = 0; i < 30; i++) {
+    const location = locations[Math.floor(Math.random() * locations.length)]
+    const brand = brands[Math.floor(Math.random() * brands.length)]
+    const product = products[Math.floor(Math.random() * products.length)]
+
+    // 价格波动 ±20%
+    const priceVariation = (Math.random() - 0.5) * 0.4 + 1
+    const finalPrice = Math.round(product.basePrice * priceVariation * 10) / 10
+
+    const date = new Date()
+    date.setDate(date.getDate() - Math.floor(Math.random() * 15)) // 最近15天内
+
+    extendedData.push({
+      id: (i + 1).toString(),
+      captureDate: date.toISOString().split('T')[0],
+      location,
+      brand,
+      productName: `${product.name} ${product.specs}`,
+      specifications: product.specs,
+      price: finalPrice,
+      sourceType: Math.random() > 0.7 ? 'ocr' : 'manual',
+      rawText: Math.random() > 0.7 ? `${brand}${product.name}${product.specs} ${finalPrice}元` : undefined,
+      uploadedBy: ['采集员小王', '采集员小李', '采集员小张', '采集员小赵'][Math.floor(Math.random() * 4)],
+      editedAt: date.toISOString()
+    })
   }
-]
+
+  return extendedData
+}
+
+export const mockCompetitorPrices: CompetitorPrice[] = generateExtendedCompetitorPrices()
 
 // 客户反馈数据
 export const mockCustomerFeedback: CustomerFeedback[] = [
