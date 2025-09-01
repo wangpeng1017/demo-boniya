@@ -17,7 +17,7 @@ interface ProductSuggestion {
 }
 
 interface ProductSuggestionsModuleProps {
-  suggestions: ProductSuggestion[]
+  suggestions?: ProductSuggestion[]
 }
 
 // 模拟产品建议数据
@@ -175,20 +175,21 @@ const mockSuggestions: ProductSuggestion[] = [
   }
 ]
 
-export default function ProductSuggestionsModule({ suggestions = mockSuggestions }: ProductSuggestionsModuleProps) {
+export default function ProductSuggestionsModule({ suggestions }: ProductSuggestionsModuleProps) {
+  const actualSuggestions = suggestions || mockSuggestions
   const [platformFilter, setPlatformFilter] = useState('全部')
   const [statusFilter, setStatusFilter] = useState('全部')
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
 
   // 获取筛选选项
   const filterOptions = useMemo(() => {
-    const platforms = Array.from(new Set(suggestions.map(item => item.platform))).sort()
+    const platforms = Array.from(new Set(actualSuggestions.map(item => item.platform))).sort()
     return { platforms }
-  }, [suggestions])
+  }, [actualSuggestions])
 
   // 应用筛选
   const filteredSuggestions = useMemo(() => {
-    let filtered = suggestions
+    let filtered = actualSuggestions
 
     if (platformFilter !== '全部') {
       filtered = filtered.filter(item => item.platform === platformFilter)
@@ -210,7 +211,7 @@ export default function ProductSuggestionsModule({ suggestions = mockSuggestions
     }
 
     return filtered.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
-  }, [suggestions, platformFilter, statusFilter, dateRange])
+  }, [actualSuggestions, platformFilter, statusFilter, dateRange])
 
   const getStatusIcon = (status: string) => {
     switch (status) {

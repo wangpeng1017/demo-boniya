@@ -118,7 +118,7 @@ export default function EcommerceAnalysisPage() {
       )}
 
       {activeTab === 'suggestions' && (
-        <ProductSuggestionsModule suggestions={[]} />
+        <ProductSuggestionsModule />
       )}
     </div>
   )
