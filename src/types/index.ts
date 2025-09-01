@@ -77,6 +77,7 @@ export interface CustomerFeedback {
   processedBy?: string
   processedAt?: string
   createdAt: string
+  productName?: string
 }
 
 export interface FeedbackAnalysis {

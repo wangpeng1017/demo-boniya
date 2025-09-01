@@ -9,9 +9,13 @@ export const mockStores: Store[] = [
   { id: '5', name: '华联即墨专柜', address: '青岛市即墨区', region: '青岛办事处', status: 'active' },
   { id: '6', name: '沃尔玛李沧专柜', address: '青岛市李沧区', region: '青岛办事处', status: 'active' },
   { id: '7', name: '银座槐荫专柜', address: '济南市槐荫区', region: '济南办事处', status: 'active' },
-  { id: '8', name: '大润发历城专柜', address: '济南市历城区', region: '济南办事处', status: 'active' },
-  { id: '9', name: '家乐福莱山专柜', address: '烟台市莱山区', region: '烟台办事处', status: 'active' },
-  { id: '10', name: '华联福山专柜', address: '烟台市福山区', region: '烟台办事处', status: 'active' },
+  { id: '8', name: '大润发市北专柜', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
+  { id: '9', name: '家乐福市北专柜', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
+  { id: '10', name: '华联市北专柜', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
+  { id: '11', name: '银座市北专柜', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
+  { id: '12', name: '沃尔玛市北专柜', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
+  { id: '13', name: '大润发市北二店', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
+  { id: '14', name: '华润万家市北专柜', address: '青岛市市北区', region: '青岛办事处', status: 'active' },
 ]
 
 // 产品数据
@@ -139,6 +143,119 @@ export const mockCustomerFeedback: CustomerFeedback[] = [
     createdAt: '2025-08-30T18:45:00Z'
   }
 ]
+
+// 生成扩展的客户反馈数据
+export function generateExtendedCustomerFeedback(): CustomerFeedback[] {
+  const platforms = ['天猫', '京东', '拼多多', '淘宝', '抖音商城']
+  const products = ['维也纳香肠', '猪头肉', '酱猪耳', '蒜味烤肠', '肉枣肠', '火腿肠', '培根']
+
+  const positiveComments = [
+    '味道很好，包装也很精美，物流很快，会回购的',
+    '质量不错，孩子很喜欢吃，价格也合理',
+    '老品牌了，一直很信赖，这次购买依然满意',
+    '口感很棒，肉质鲜美，包装密封性很好',
+    '发货速度很快，包装完整，产品新鲜',
+    '家人都很喜欢，会推荐给朋友',
+    '性价比很高，比超市便宜，质量一样好',
+    '客服态度很好，解答很耐心，产品也满意',
+    '包装很用心，产品保质期很新，很放心',
+    '多次购买了，品质稳定，值得信赖'
+  ]
+
+  const neutralComments = [
+    '产品还可以，包装一般，价格合适',
+    '味道还行，没有特别惊喜，也没有失望',
+    '物流速度一般，产品质量还可以',
+    '包装简单了点，但产品本身没问题',
+    '价格稍微有点贵，但质量还是可以的',
+    '第一次买，感觉还行，下次再看看',
+    '产品符合预期，没有特别的亮点',
+    '包装可以再改进一下，产品本身不错'
+  ]
+
+  const negativeComments = [
+    '包装破损，里面的产品都变质了，太失望了',
+    '发现里面有头发，太恶心了，食品安全堪忧',
+    '味道很奇怪，感觉不新鲜，不敢吃',
+    '客服态度很差，问题迟迟不解决',
+    '物流太慢了，等了一个星期才到',
+    '包装漏气，产品都坏了，要求退货',
+    '价格虚高，质量一般，不值这个价',
+    '产品过期了还在卖，太不负责任了',
+    '包装上的生产日期模糊不清，怀疑是假货',
+    '多次联系客服都没有回复，服务太差了'
+  ]
+
+  const issues = [
+    ['包装问题-破损'],
+    ['产品质量-异物'],
+    ['产品质量-不新鲜'],
+    ['客服问题'],
+    ['物流问题-速度慢'],
+    ['包装问题-漏气'],
+    ['价格问题'],
+    ['产品质量-过期'],
+    ['产品质量-标识不清'],
+    ['客服问题', '物流问题-速度慢']
+  ]
+
+  const extendedData: CustomerFeedback[] = []
+
+  // 生成120条数据，按比例分配：正面80%、中性12%、负面8%
+  for (let i = 0; i < 120; i++) {
+    const platform = platforms[Math.floor(Math.random() * platforms.length)]
+    const product = products[Math.floor(Math.random() * products.length)]
+
+    let sentiment: 'positive' | 'neutral' | 'negative'
+    let comment: string
+    let feedbackIssues: string[]
+    let urgency: 'high' | 'medium' | 'low'
+    let status: 'pending' | 'in_progress' | 'resolved'
+
+    // 按比例分配情感
+    const rand = Math.random()
+    if (rand < 0.8) {
+      sentiment = 'positive'
+      comment = positiveComments[Math.floor(Math.random() * positiveComments.length)]
+      feedbackIssues = []
+      urgency = 'low'
+      status = 'resolved'
+    } else if (rand < 0.92) {
+      sentiment = 'neutral'
+      comment = neutralComments[Math.floor(Math.random() * neutralComments.length)]
+      feedbackIssues = Math.random() > 0.7 ? [issues[Math.floor(Math.random() * issues.length)][0]] : []
+      urgency = 'medium'
+      status = Math.random() > 0.5 ? 'resolved' : 'in_progress'
+    } else {
+      sentiment = 'negative'
+      comment = negativeComments[Math.floor(Math.random() * negativeComments.length)]
+      feedbackIssues = issues[Math.floor(Math.random() * issues.length)]
+      urgency = Math.random() > 0.5 ? 'high' : 'medium'
+      status = Math.random() > 0.3 ? 'pending' : 'in_progress'
+    }
+
+    const date = new Date()
+    date.setDate(date.getDate() - Math.floor(Math.random() * 30)) // 最近30天内
+
+    extendedData.push({
+      id: (i + 100).toString(),
+      platform,
+      orderId: `${platform.substring(0, 2).toUpperCase()}${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}${String(i + 1000).padStart(4, '0')}`,
+      originalComment: comment,
+      commentTime: date.toISOString(),
+      sentiment,
+      issues: feedbackIssues,
+      urgency,
+      summary: `${product}相关反馈`,
+      status,
+      processedBy: status !== 'pending' ? ['客服小王', '客服小李', '客服小张'][Math.floor(Math.random() * 3)] : undefined,
+      createdAt: date.toISOString(),
+      productName: product
+    })
+  }
+
+  return [...mockCustomerFeedback, ...extendedData]
+}
 
 // 生成更多模拟数据的函数
 export function generateMockSalesData(days: number = 30): SalesData[] {
