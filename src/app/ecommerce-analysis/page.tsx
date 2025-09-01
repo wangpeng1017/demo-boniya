@@ -146,7 +146,7 @@ export default function EcommerceAnalysisPage() {
     if (feedbackData.length > 0) {
       performAIAnalysis(feedbackData)
     }
-  }, [feedbackData.length])
+  }, [feedbackData.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="p-6 space-y-6">

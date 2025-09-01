@@ -296,9 +296,10 @@ export default function CompetitorAnalysisPage() {
                   {ocrResults.map(result => (
                     <div key={result.id} className="bg-white border border-gray-200 rounded-lg p-4">
                       <div className="flex items-start space-x-4">
-                        <img 
-                          src={result.imageUrl} 
-                          alt="上传的图片" 
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={result.imageUrl}
+                          alt="上传的图片"
                           className="w-24 h-24 object-cover rounded-md"
                         />
                         <div className="flex-1">

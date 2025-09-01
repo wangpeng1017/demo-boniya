@@ -211,7 +211,7 @@ export default function SalesForecastPage() {
 
   useEffect(() => {
     generateForecastData()
-  }, [selectedStore, selectedProducts, dateRange])
+  }, [selectedStore, selectedProducts, dateRange]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 点击外部关闭商品选择器
   useEffect(() => {
