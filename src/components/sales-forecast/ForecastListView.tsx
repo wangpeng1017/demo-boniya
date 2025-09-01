@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Filter, Download, TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Filter, Download, TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight, Brain } from 'lucide-react'
 import { generateForecastListData, ForecastListItem, mockStores, mockProducts } from '@/lib/mockData'
 import { formatNumber, delay } from '@/lib/utils'
+import AILLMPrediction from './AILLMPrediction'
 
 interface FilterState {
   cities: string[]
@@ -34,6 +35,9 @@ export default function ForecastListView() {
     products: [],
     categories: []
   })
+  const [aiPredictionOpen, setAiPredictionOpen] = useState(false)
+  const [selectedStoreForAI, setSelectedStoreForAI] = useState('')
+  const [selectedProductForAI, setSelectedProductForAI] = useState('')
 
   // 获取筛选选项
   const filterOptions = useMemo(() => {
@@ -211,6 +215,22 @@ export default function ForecastListView() {
     link.click()
   }
 
+  // 打开AI预测模态框
+  const openAIPrediction = () => {
+    // 默认选择第一个门店和商品
+    const defaultStore = filteredData.length > 0 ? filteredData[0] : null
+    if (defaultStore) {
+      setSelectedStoreForAI(defaultStore.storeName)
+      setSelectedProductForAI(defaultStore.productName)
+      setAiPredictionOpen(true)
+    } else {
+      // 如果没有数据，使用默认值
+      setSelectedStoreForAI('青岛市城阳区利客来专柜')
+      setSelectedProductForAI('老汤牛肉')
+      setAiPredictionOpen(true)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -278,7 +298,14 @@ export default function ForecastListView() {
             )}
           </div>
           <div className="flex gap-2">
-            <button onClick={exportToExcel} className="btn-primary flex items-center">
+            <button
+              onClick={openAIPrediction}
+              className="btn-primary flex items-center bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              AI大语言模型预测
+            </button>
+            <button onClick={exportToExcel} className="btn-secondary flex items-center">
               <Download className="w-4 h-4 mr-2" />
               导出Excel
             </button>
@@ -566,6 +593,16 @@ export default function ForecastListView() {
       <div className="text-center text-sm text-gray-500">
         数据更新时间：{new Date().toLocaleString('zh-CN')}
       </div>
+
+      {/* AI大语言模型预测模态框 */}
+      <AILLMPrediction
+        isOpen={aiPredictionOpen}
+        onClose={() => setAiPredictionOpen(false)}
+        selectedStore=""
+        selectedProduct=""
+        storeName={selectedStoreForAI}
+        productName={selectedProductForAI}
+      />
     </div>
   )
 }
