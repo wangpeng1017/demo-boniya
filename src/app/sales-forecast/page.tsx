@@ -157,9 +157,9 @@ export default function SalesForecastPage() {
         sum + productData.reduce((pSum, item) => pSum + item.predicted, 0), 0
       )
 
-      const categories = [...new Set(selectedProducts.map(id =>
+      const categories = Array.from(new Set(selectedProducts.map(id =>
         mockProducts.find(p => p.id === id)?.category || ''
-      ))].filter(cat => cat)
+      ))).filter(cat => cat)
 
       report = {
         summary: `基于多商品组合分析，${selectedProductNames.join('、')}等${selectedProducts.length}个商品在${selectedStoreName}的本周预测总销量为${Math.round(totalPredicted)}千克。商品间存在良好的互补效应，建议采用组合销售策略。`,

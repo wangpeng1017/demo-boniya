@@ -49,8 +49,11 @@ export interface CompetitorPrice {
   specifications: string
   price: number
   rawText?: string
-  sourceType: 'ocr' | 'manual'
+  sourceType: 'ocr' | 'manual' | 'import'
   salespersonId?: string
+  uploadedBy?: string  // 上传人
+  editedAt?: string    // 编辑时间
+  editedBy?: string    // 编辑人
 }
 
 export interface CompetitorBrand {

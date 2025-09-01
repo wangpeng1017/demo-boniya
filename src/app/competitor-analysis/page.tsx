@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Camera, MapPin, Upload, Search, Filter, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react'
+import { Camera, MapPin, Upload, Search, Filter, TrendingUp, AlertCircle, CheckCircle, Edit, Download, FileSpreadsheet, Plus, Eye } from 'lucide-react'
 import { mockCompetitorPrices } from '@/lib/mockData'
-import { formatCurrency, delay } from '@/lib/utils'
+import { formatCurrency, delay, formatDateTime } from '@/lib/utils'
 import { CompetitorPrice } from '@/types'
+import DataEditModal from '@/components/competitor-analysis/DataEditModal'
+import FileImportModal from '@/components/competitor-analysis/FileImportModal'
 
 interface OCRResult {
   id: string
@@ -27,6 +29,13 @@ export default function CompetitorAnalysisPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState('青岛办事处')
   const [selectedBrand, setSelectedBrand] = useState('全部')
+
+  // 新增状态
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [editingData, setEditingData] = useState<Partial<CompetitorPrice> | null>(null)
+  const [importModalOpen, setImportModalOpen] = useState(false)
+  const [importType, setImportType] = useState<'our-products' | 'competitor-products'>('our-products')
+  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null)
 
   const locations = ['全部', '青岛办事处', '济南办事处', '烟台办事处', '城阳即墨']
   const brands = ['全部', '喜旺', '双汇', '金锣', '其他']
@@ -83,7 +92,7 @@ export default function CompetitorAnalysisPage() {
   // 确认OCR结果并添加到数据库
   const confirmOCRResult = (ocrResult: OCRResult) => {
     if (!ocrResult.extractedData) return
-    
+
     const newCompetitorPrice: CompetitorPrice = {
       id: `comp-${Date.now()}`,
       captureDate: new Date().toISOString(),
@@ -93,11 +102,80 @@ export default function CompetitorAnalysisPage() {
       specifications: ocrResult.extractedData.specifications,
       price: ocrResult.extractedData.price,
       rawText: ocrResult.rawText,
-      sourceType: 'ocr'
+      sourceType: 'ocr',
+      uploadedBy: '当前用户',
+      editedAt: new Date().toISOString()
     }
-    
+
     setCompetitorData(prev => [newCompetitorPrice, ...prev])
     setOcrResults(prev => prev.filter(r => r.id !== ocrResult.id))
+    showNotification('success', 'OCR数据已成功添加')
+  }
+
+  // 新增处理函数
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message })
+    setTimeout(() => setNotification(null), 3000)
+  }
+
+  const handleEditData = (data: CompetitorPrice) => {
+    setEditingData(data)
+    setEditModalOpen(true)
+  }
+
+  const handleSaveEdit = async (updatedData: Partial<CompetitorPrice>) => {
+    try {
+      await delay(500) // 模拟保存延迟
+
+      setCompetitorData(prev => prev.map(item =>
+        item.id === updatedData.id ? { ...item, ...updatedData } : item
+      ))
+
+      showNotification('success', '数据已成功更新')
+    } catch (error) {
+      showNotification('error', '保存失败，请重试')
+    }
+  }
+
+  const handleImportData = async (importedData: Partial<CompetitorPrice>[]) => {
+    try {
+      const newData = importedData.map(item => ({
+        ...item,
+        id: item.id || `import-${Date.now()}-${Math.random()}`,
+        captureDate: item.captureDate || new Date().toISOString(),
+        uploadedBy: '当前用户',
+        editedAt: new Date().toISOString()
+      })) as CompetitorPrice[]
+
+      setCompetitorData(prev => [...newData, ...prev])
+      showNotification('success', `成功导入 ${importedData.length} 条数据`)
+    } catch (error) {
+      showNotification('error', '导入失败，请重试')
+    }
+  }
+
+  const handleExportData = () => {
+    const csvContent = [
+      ['品牌', '商品名称', '规格', '价格', '地点', '采集时间', '上传人', '编辑时间'].join(','),
+      ...filteredData.map(item => [
+        item.brand,
+        item.productName,
+        item.specifications,
+        item.price,
+        item.location,
+        formatDateTime(item.captureDate),
+        item.uploadedBy || '',
+        item.editedAt ? formatDateTime(item.editedAt) : ''
+      ].join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `竞品价格数据_${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+
+    showNotification('success', '数据导出成功')
   }
 
   // 筛选数据
@@ -257,7 +335,25 @@ export default function CompetitorAnalysisPage() {
                                   </span>
                                 </div>
                               </div>
-                              <div className="mt-3">
+                              <div className="mt-3 flex space-x-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingData({
+                                      brand: result.extractedData!.brand,
+                                      productName: result.extractedData!.productName,
+                                      specifications: result.extractedData!.specifications,
+                                      price: result.extractedData!.price,
+                                      location: selectedLocation,
+                                      rawText: result.rawText,
+                                      sourceType: 'ocr'
+                                    })
+                                    setEditModalOpen(true)
+                                  }}
+                                  className="btn-secondary text-sm flex items-center"
+                                >
+                                  <Edit className="w-4 h-4 mr-1" />
+                                  编辑
+                                </button>
                                 <button
                                   onClick={() => confirmOCRResult(result)}
                                   className="btn-primary text-sm"
@@ -306,6 +402,42 @@ export default function CompetitorAnalysisPage() {
                 </div>
               </div>
 
+              {/* 工具栏 */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">数据管理</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        setImportType('our-products')
+                        setImportModalOpen(true)
+                      }}
+                      className="btn-secondary text-sm flex items-center"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      导入本品价格
+                    </button>
+                    <button
+                      onClick={() => {
+                        setImportType('competitor-products')
+                        setImportModalOpen(true)
+                      }}
+                      className="btn-secondary text-sm flex items-center"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 mr-1" />
+                      导入竞品价格
+                    </button>
+                    <button
+                      onClick={handleExportData}
+                      className="btn-primary text-sm flex items-center"
+                    >
+                      <Download className="w-4 h-4 mr-1" />
+                      导出表格
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {/* 价格对比表格 */}
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200">
@@ -336,6 +468,15 @@ export default function CompetitorAnalysisPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           价格差异
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          上传人
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          编辑时间
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          操作
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -365,12 +506,27 @@ export default function CompetitorAnalysisPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                comparison.isHigher 
-                                  ? 'bg-red-100 text-red-800' 
+                                comparison.isHigher
+                                  ? 'bg-red-100 text-red-800'
                                   : 'bg-green-100 text-green-800'
                               }`}>
                                 {comparison.isHigher ? '↑' : '↓'} {Math.abs(comparison.percentage)}%
                               </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {item.uploadedBy || '未知'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {item.editedAt ? formatDateTime(item.editedAt) : formatDateTime(item.captureDate)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <button
+                                onClick={() => handleEditData(item)}
+                                className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center mx-auto"
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                编辑
+                              </button>
                             </td>
                           </tr>
                         )
@@ -383,6 +539,51 @@ export default function CompetitorAnalysisPage() {
           )}
         </div>
       </div>
+
+      {/* 数据编辑模态框 */}
+      <DataEditModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false)
+          setEditingData(null)
+        }}
+        onSave={handleSaveEdit}
+        initialData={editingData || undefined}
+        title={editingData ? "编辑数据" : "添加数据"}
+      />
+
+      {/* 文件导入模态框 */}
+      <FileImportModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={handleImportData}
+        type={importType}
+        title={importType === 'our-products' ? '导入本品价格' : '导入竞品价格'}
+      />
+
+      {/* 通知组件 */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`rounded-lg p-4 shadow-lg ${
+            notification.type === 'success'
+              ? 'bg-green-50 border border-green-200'
+              : 'bg-red-50 border border-red-200'
+          }`}>
+            <div className="flex items-center">
+              {notification.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+              )}
+              <span className={`text-sm font-medium ${
+                notification.type === 'success' ? 'text-green-800' : 'text-red-800'
+              }`}>
+                {notification.message}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
