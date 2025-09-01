@@ -27,6 +27,7 @@ export default function SalesForecastPage() {
   const [selectedStore, setSelectedStore] = useState(mockStores[0].id)
   const [selectedProducts, setSelectedProducts] = useState<string[]>([mockProducts[0].id])
   const [productSearchTerm, setProductSearchTerm] = useState('')
+  const [isProductSelectorOpen, setIsProductSelectorOpen] = useState(false)
   const [dateRange, setDateRange] = useState({ start: '2025-09-01', end: '2025-09-07' })
   const [forecastData, setForecastData] = useState<{ [productId: string]: ForecastData[] }>({})
   const [aiReport, setAiReport] = useState<AIReport | null>(null)
@@ -52,6 +53,26 @@ export default function SalesForecastPage() {
 
   const handleClearAllProducts = () => {
     setSelectedProducts([])
+  }
+
+  const toggleProductSelector = () => {
+    setIsProductSelectorOpen(!isProductSelectorOpen)
+  }
+
+  const closeProductSelector = () => {
+    setIsProductSelectorOpen(false)
+  }
+
+  // 获取已选择商品的摘要信息
+  const getSelectedProductsSummary = () => {
+    if (selectedProducts.length === 0) {
+      return '请选择商品'
+    }
+    if (selectedProducts.length === 1) {
+      const product = mockProducts.find(p => p.id === selectedProducts[0])
+      return product?.name || '未知商品'
+    }
+    return `已选择 ${selectedProducts.length} 个商品`
   }
 
   // 图表颜色配置
@@ -105,6 +126,7 @@ export default function SalesForecastPage() {
       allData[productId] = data
     })
 
+    console.log('Generated forecast data:', allData)
     setForecastData(allData)
     setIsLoading(false)
   }
@@ -192,6 +214,21 @@ export default function SalesForecastPage() {
     generateForecastData()
   }, [selectedStore, selectedProducts, dateRange])
 
+  // 点击外部关闭商品选择器
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (isProductSelectorOpen && !target.closest('.product-selector')) {
+        setIsProductSelectorOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isProductSelectorOpen])
+
   return (
     <div className="p-6 space-y-6">
       {/* 页面标题 */}
@@ -268,61 +305,104 @@ export default function SalesForecastPage() {
             </select>
           </div>
           
-          <div>
+          <div className="relative product-selector">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <Package className="w-4 h-4 inline mr-1" />
-              选择商品 {selectedProducts.length > 0 && (
-                <span className="text-primary-600">（已选择{selectedProducts.length}个商品）</span>
-              )}
+              选择商品
             </label>
 
-            {/* 搜索框 */}
-            <div className="mb-3">
-              <input
-                type="text"
-                placeholder="搜索商品名称..."
-                value={productSearchTerm}
-                onChange={(e) => setProductSearchTerm(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
+            {/* 商品选择器触发器 */}
+            <div
+              onClick={toggleProductSelector}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 cursor-pointer bg-white hover:border-gray-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500"
+            >
+              <div className="flex items-center justify-between">
+                <span className={`text-sm ${selectedProducts.length === 0 ? 'text-gray-500' : 'text-gray-900'}`}>
+                  {getSelectedProductsSummary()}
+                </span>
+                <svg
+                  className={`w-4 h-4 text-gray-400 transition-transform ${isProductSelectorOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
 
-            {/* 批量操作按钮 */}
-            <div className="flex gap-2 mb-3">
-              <button
-                onClick={handleSelectAllProducts}
-                className="text-xs bg-primary-50 text-primary-600 px-2 py-1 rounded hover:bg-primary-100"
-              >
-                全选
-              </button>
-              <button
-                onClick={handleClearAllProducts}
-                className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded hover:bg-gray-100"
-              >
-                清除
-              </button>
-            </div>
-
-            {/* 商品复选框列表 */}
-            <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1">
-              {filteredProducts.map(product => (
-                <label key={product.id} className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-1 rounded">
+            {/* 下拉面板 */}
+            {isProductSelectorOpen && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                {/* 搜索框 */}
+                <div className="p-3 border-b border-gray-200">
                   <input
-                    type="checkbox"
-                    checked={selectedProducts.includes(product.id)}
-                    onChange={() => handleProductToggle(product.id)}
-                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    type="text"
+                    placeholder="搜索商品名称..."
+                    value={productSearchTerm}
+                    onChange={(e) => setProductSearchTerm(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="flex-1">{product.name}</span>
-                  <span className="text-xs text-gray-500">{product.category}</span>
-                </label>
-              ))}
-              {filteredProducts.length === 0 && (
-                <div className="text-sm text-gray-500 text-center py-2">
-                  未找到匹配的商品
                 </div>
-              )}
-            </div>
+
+                {/* 批量操作按钮 */}
+                <div className="flex gap-2 p-3 border-b border-gray-200">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleSelectAllProducts()
+                    }}
+                    className="text-xs bg-primary-50 text-primary-600 px-2 py-1 rounded hover:bg-primary-100"
+                  >
+                    全选
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleClearAllProducts()
+                    }}
+                    className="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded hover:bg-gray-100"
+                  >
+                    清除
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      closeProductSelector()
+                    }}
+                    className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 ml-auto"
+                  >
+                    完成
+                  </button>
+                </div>
+
+                {/* 商品复选框列表 */}
+                <div className="max-h-48 overflow-y-auto p-2">
+                  {filteredProducts.map(product => (
+                    <label
+                      key={product.id}
+                      className="flex items-center space-x-2 text-sm hover:bg-gray-50 p-2 rounded cursor-pointer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.includes(product.id)}
+                        onChange={() => handleProductToggle(product.id)}
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="flex-1">{product.name}</span>
+                      <span className="text-xs text-gray-500">{product.category}</span>
+                    </label>
+                  ))}
+                  {filteredProducts.length === 0 && (
+                    <div className="text-sm text-gray-500 text-center py-4">
+                      未找到匹配的商品
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* 性能提醒 */}
             {selectedProducts.length > 5 && (

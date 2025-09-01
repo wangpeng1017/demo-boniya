@@ -17,6 +17,13 @@ interface MultiProductChartProps {
 }
 
 export default function MultiProductChart({ forecastData, selectedProducts, chartColors }: MultiProductChartProps) {
+  // 调试信息
+  console.log('MultiProductChart props:', {
+    forecastDataKeys: Object.keys(forecastData),
+    selectedProducts,
+    chartColors
+  })
+
   // 合并所有商品的数据到一个数组中
   const mergedData = () => {
     if (selectedProducts.length === 0) return []
@@ -95,31 +102,33 @@ export default function MultiProductChart({ forecastData, selectedProducts, char
         {/* 为每个商品生成线条 */}
         {selectedProducts.map((productId, index) => {
           const color = chartColors[index % chartColors.length]
-          
-          return (
-            <g key={productId}>
-              {/* 预测线 - 虚线 */}
-              <Line
-                type="monotone"
-                dataKey={`predicted_${productId}`}
-                stroke={color}
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                dot={{ fill: color, strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
-              />
-              {/* 历史线 - 实线 */}
-              <Line
-                type="monotone"
-                dataKey={`actual_${productId}`}
-                stroke={color}
-                strokeWidth={2}
-                dot={{ fill: color, strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
-              />
-            </g>
-          )
-        })}
+
+          return [
+            /* 预测线 - 虚线 */
+            <Line
+              key={`predicted_${productId}`}
+              type="monotone"
+              dataKey={`predicted_${productId}`}
+              stroke={color}
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={{ fill: color, strokeWidth: 2, r: 4 }}
+              activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
+              name={`predicted_${productId}`}
+            />,
+            /* 历史线 - 实线 */
+            <Line
+              key={`actual_${productId}`}
+              type="monotone"
+              dataKey={`actual_${productId}`}
+              stroke={color}
+              strokeWidth={2}
+              dot={{ fill: color, strokeWidth: 2, r: 4 }}
+              activeDot={{ r: 6, stroke: color, strokeWidth: 2 }}
+              name={`actual_${productId}`}
+            />
+          ]
+        }).flat()}
       </LineChart>
     </ResponsiveContainer>
   )
