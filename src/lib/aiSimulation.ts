@@ -147,6 +147,172 @@ export class GeminiSimulator {
     }
   }
 
+  // 模拟AI深度洞察分析
+  static async generateAIInsights(feedback: {
+    id: string
+    originalComment: string
+    platform: string
+    sentiment: 'positive' | 'neutral' | 'negative'
+    issues: string[]
+    urgency: 'high' | 'medium' | 'low'
+    productName?: string
+  }): Promise<{
+    intelligentCategorization: {
+      primaryCategory: string
+      secondaryCategories: string[]
+      confidence: number
+    }
+    keywordExtraction: {
+      keywords: string[]
+      phrases: string[]
+      emotions: string[]
+    }
+    deepAnalysis: {
+      rootCause: string
+      impactAssessment: string
+      recommendedActions: string[]
+      similarCases: number
+      urgencyReason: string
+    }
+  }> {
+    await delay(1500 + Math.random() * 1000)
+
+    const comment = feedback.originalComment
+
+    // 智能分类
+    let primaryCategory = '产品质量问题'
+    let secondaryCategories: string[] = []
+
+    if (comment.includes('包装') || comment.includes('破损') || comment.includes('漏')) {
+      primaryCategory = '包装问题'
+      secondaryCategories = ['包装破损', '密封不良', '外观缺陷']
+    } else if (comment.includes('异物') || comment.includes('头发') || comment.includes('毛发') || comment.includes('脏')) {
+      primaryCategory = '食品安全问题'
+      secondaryCategories = ['异物污染', '卫生问题', '生产环境']
+    } else if (comment.includes('不新鲜') || comment.includes('变质') || comment.includes('过期') || comment.includes('臭')) {
+      primaryCategory = '产品质量问题'
+      secondaryCategories = ['新鲜度问题', '保质期管理', '储存条件']
+    } else if (comment.includes('物流') || comment.includes('配送') || comment.includes('慢') || comment.includes('快递')) {
+      primaryCategory = '物流服务问题'
+      secondaryCategories = ['配送延迟', '物流损坏', '服务态度']
+    } else if (comment.includes('客服') || comment.includes('服务') || comment.includes('态度')) {
+      primaryCategory = '客户服务问题'
+      secondaryCategories = ['响应速度', '服务态度', '专业能力']
+    } else if (comment.includes('价格') || comment.includes('贵') || comment.includes('便宜')) {
+      primaryCategory = '价格问题'
+      secondaryCategories = ['性价比', '定价策略', '促销活动']
+    }
+
+    // 关键词提取
+    const keywords: string[] = []
+    const phrases: string[] = []
+    const emotions: string[] = []
+
+    // 提取关键词
+    const keywordPatterns = [
+      '包装', '破损', '异物', '头发', '不新鲜', '变质', '过期', '物流', '配送', '客服', '服务', '价格', '质量', '味道', '新鲜'
+    ]
+    keywordPatterns.forEach(pattern => {
+      if (comment.includes(pattern)) {
+        keywords.push(pattern)
+      }
+    })
+
+    // 提取短语
+    const phrasePatterns = [
+      '包装破损', '食品安全', '不新鲜', '客服态度', '物流速度', '产品质量', '服务态度', '配送延迟'
+    ]
+    phrasePatterns.forEach(pattern => {
+      if (comment.includes(pattern.split('').join('.*'))) {
+        phrases.push(pattern)
+      }
+    })
+
+    // 情感词汇
+    const emotionPatterns = [
+      { words: ['失望', '不满', '愤怒', '生气'], emotion: '负面情绪' },
+      { words: ['满意', '开心', '喜欢', '不错'], emotion: '正面情绪' },
+      { words: ['担心', '害怕', '恶心', '恐惧'], emotion: '恐惧担忧' },
+      { words: ['希望', '期待', '建议'], emotion: '期望建议' }
+    ]
+    emotionPatterns.forEach(({ words, emotion }) => {
+      if (words.some(word => comment.includes(word))) {
+        emotions.push(emotion)
+      }
+    })
+
+    // 深度分析
+    let rootCause = ''
+    let impactAssessment = ''
+    let recommendedActions: string[] = []
+    let urgencyReason = ''
+
+    if (primaryCategory === '食品安全问题') {
+      rootCause = '生产过程中的卫生控制不严格，可能存在生产环境污染或操作不规范'
+      impactAssessment = '高风险：食品安全问题可能影响品牌声誉，需要立即处理以避免更大范围的负面影响'
+      recommendedActions = [
+        '立即联系客户进行产品召回和退换',
+        '启动内部质量调查，检查生产环节',
+        '加强生产线卫生管理和员工培训',
+        '考虑发布公开声明说明改进措施'
+      ]
+      urgencyReason = '食品安全问题涉及消费者健康，可能引发监管关注和媒体报道'
+    } else if (primaryCategory === '包装问题') {
+      rootCause = '包装材料质量不达标或运输过程中的保护措施不足'
+      impactAssessment = '中等风险：影响产品外观和消费体验，可能导致客户流失'
+      recommendedActions = [
+        '检查包装供应商的质量标准',
+        '优化物流包装保护措施',
+        '为客户提供免费换货服务',
+        '建立包装质量监控机制'
+      ]
+      urgencyReason = '包装问题直接影响产品完整性，需要及时处理避免客户不满'
+    } else if (primaryCategory === '产品质量问题') {
+      rootCause = '产品储存条件不当或供应链管理存在漏洞'
+      impactAssessment = '高风险：产品质量直接关系到品牌信誉和客户忠诚度'
+      recommendedActions = [
+        '检查产品储存和运输的温度控制',
+        '审查供应商的质量管理体系',
+        '加强产品保质期管理',
+        '建立产品质量追溯系统'
+      ]
+      urgencyReason = '产品质量问题可能影响消费者健康和品牌形象'
+    } else {
+      rootCause = '服务流程不完善或员工培训不足'
+      impactAssessment = '中等风险：影响客户满意度和服务体验'
+      recommendedActions = [
+        '加强员工服务培训',
+        '优化服务流程和响应机制',
+        '建立客户反馈快速处理通道',
+        '定期进行服务质量评估'
+      ]
+      urgencyReason = '服务问题影响客户体验，需要及时改进'
+    }
+
+    // 模拟相似案例数量
+    const similarCases = Math.floor(Math.random() * 20) + 1
+
+    return {
+      intelligentCategorization: {
+        primaryCategory,
+        secondaryCategories,
+        confidence: 0.85 + Math.random() * 0.12
+      },
+      keywordExtraction: {
+        keywords: keywords.slice(0, 5), // 最多5个关键词
+        phrases: phrases.slice(0, 3),   // 最多3个短语
+        emotions: emotions.slice(0, 2)  // 最多2个情感
+      },
+      deepAnalysis: {
+        rootCause,
+        impactAssessment,
+        recommendedActions,
+        similarCases,
+        urgencyReason
+      }
+    }
+  }
+
   // 模拟语音转文字
   static async transcribeAudio(audioUrl: string): Promise<string> {
     await delay(3000 + Math.random() * 2000)
@@ -242,6 +408,168 @@ export class GeminiSimulator {
       defects,
       confidence: 0.85 + Math.random() * 0.12,
       notes
+    }
+  }
+
+  // 模拟批量AI洞察分析
+  static async generateBatchInsights(feedbackList: Array<{
+    id: string
+    originalComment: string
+    platform: string
+    sentiment: 'positive' | 'neutral' | 'negative'
+    issues: string[]
+    urgency: 'high' | 'medium' | 'low'
+    productName?: string
+    commentTime: string
+  }>): Promise<{
+    overallSentiment: {
+      positive: number
+      neutral: number
+      negative: number
+      totalCount: number
+    }
+    issueStatistics: {
+      category: string
+      count: number
+      percentage: number
+      trend: 'increasing' | 'stable' | 'decreasing'
+    }[]
+    urgentIssues: {
+      summary: string
+      count: number
+      topIssues: string[]
+      affectedPlatforms: string[]
+    }
+    trendAnalysis: {
+      weeklyTrend: string
+      platformComparison: {
+        platform: string
+        negativeRate: number
+        mainIssues: string[]
+      }[]
+      recommendations: string[]
+    }
+    keyInsights: string[]
+  }> {
+    await delay(2000 + Math.random() * 1000)
+
+    const totalCount = feedbackList.length
+
+    // 整体情感分布
+    const sentimentCounts = feedbackList.reduce((acc, item) => {
+      acc[item.sentiment]++
+      return acc
+    }, { positive: 0, neutral: 0, negative: 0 })
+
+    // 问题类型统计
+    const issueMap = new Map<string, number>()
+    feedbackList.forEach(item => {
+      item.issues.forEach(issue => {
+        const category = issue.split('-')[0] || issue
+        issueMap.set(category, (issueMap.get(category) || 0) + 1)
+      })
+    })
+
+    const issueStatistics = Array.from(issueMap.entries())
+      .map(([category, count]) => ({
+        category,
+        count,
+        percentage: Math.round((count / totalCount) * 100),
+        trend: Math.random() > 0.6 ? 'increasing' as const :
+               Math.random() > 0.3 ? 'stable' as const : 'decreasing' as const
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8) // 取前8个主要问题
+
+    // 紧急问题汇总
+    const urgentFeedback = feedbackList.filter(item => item.urgency === 'high')
+    const urgentIssueMap = new Map<string, number>()
+    urgentFeedback.forEach(item => {
+      item.issues.forEach(issue => {
+        urgentIssueMap.set(issue, (urgentIssueMap.get(issue) || 0) + 1)
+      })
+    })
+
+    const topUrgentIssues = Array.from(urgentIssueMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([issue]) => issue)
+
+    const affectedPlatforms = Array.from(new Set(urgentFeedback.map(item => item.platform)))
+
+    // 平台对比分析
+    const platformMap = new Map<string, { total: number, negative: number, issues: string[] }>()
+    feedbackList.forEach(item => {
+      if (!platformMap.has(item.platform)) {
+        platformMap.set(item.platform, { total: 0, negative: 0, issues: [] })
+      }
+      const platformData = platformMap.get(item.platform)!
+      platformData.total++
+      if (item.sentiment === 'negative') {
+        platformData.negative++
+      }
+      platformData.issues.push(...item.issues)
+    })
+
+    const platformComparison = Array.from(platformMap.entries()).map(([platform, data]) => {
+      const negativeRate = Math.round((data.negative / data.total) * 100)
+      const issueCount = new Map<string, number>()
+      data.issues.forEach(issue => {
+        const category = issue.split('-')[0] || issue
+        issueCount.set(category, (issueCount.get(category) || 0) + 1)
+      })
+      const mainIssues = Array.from(issueCount.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([issue]) => issue)
+
+      return {
+        platform,
+        negativeRate,
+        mainIssues
+      }
+    })
+
+    // 生成关键洞察
+    const keyInsights = [
+      `共分析${totalCount}条客户反馈，负面反馈占比${Math.round((sentimentCounts.negative / totalCount) * 100)}%`,
+      `主要问题集中在${issueStatistics.slice(0, 3).map(item => item.category).join('、')}方面`,
+      `${urgentFeedback.length}条反馈被标记为高紧急度，需要优先处理`,
+      `${platformComparison.find(p => p.negativeRate === Math.max(...platformComparison.map(p => p.negativeRate)))?.platform}平台负面反馈率最高`,
+      issueStatistics.some(item => item.trend === 'increasing') ?
+        `${issueStatistics.filter(item => item.trend === 'increasing').map(item => item.category).join('、')}问题呈上升趋势，需要重点关注` :
+        '各类问题趋势相对稳定，但仍需持续监控'
+    ]
+
+    // 生成建议
+    const recommendations = [
+      '建议优先处理食品安全和产品质量相关的高紧急度反馈',
+      '加强与负面反馈率较高平台的沟通协调，改善服务质量',
+      '针对主要问题类型制定专项改进计划',
+      '建立客户反馈快速响应机制，提升处理效率',
+      '定期分析反馈趋势，预防问题扩大化'
+    ]
+
+    return {
+      overallSentiment: {
+        positive: sentimentCounts.positive,
+        neutral: sentimentCounts.neutral,
+        negative: sentimentCounts.negative,
+        totalCount
+      },
+      issueStatistics,
+      urgentIssues: {
+        summary: `发现${urgentFeedback.length}条高紧急度反馈，主要涉及${topUrgentIssues.slice(0, 2).join('、')}等问题`,
+        count: urgentFeedback.length,
+        topIssues: topUrgentIssues,
+        affectedPlatforms
+      },
+      trendAnalysis: {
+        weeklyTrend: totalCount > 50 ? '本周反馈量较上周增长15%，需要关注问题趋势' : '本周反馈量正常，整体情况稳定',
+        platformComparison,
+        recommendations
+      },
+      keyInsights
     }
   }
 }

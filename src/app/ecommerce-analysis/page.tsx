@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ShoppingBag, AlertTriangle, TrendingUp, MessageSquare } from 'lucide-react'
+import { ShoppingBag, AlertTriangle, TrendingUp, MessageSquare, Brain } from 'lucide-react'
 import { generateExtendedCustomerFeedback } from '@/lib/mockData'
 import CustomerReviewsTab from '@/components/ecommerce-analysis/CustomerReviewsTab'
 import ProductSuggestionsModule from '@/components/ecommerce-analysis/ProductSuggestionsModule'
+import AIInsightModal from '@/components/ecommerce-analysis/AIInsightModal'
 import { delay } from '@/lib/utils'
 import { CustomerFeedback, FeedbackAnalysis } from '@/types'
 
@@ -12,6 +13,9 @@ export default function EcommerceAnalysisPage() {
   const [feedbackData, setFeedbackData] = useState<CustomerFeedback[]>([])
   const [activeTab, setActiveTab] = useState<'reviews' | 'feedback' | 'suggestions'>('reviews')
   const [processedFeedback, setProcessedFeedback] = useState<{[key: string]: string}>({})
+  const [aiInsightModalOpen, setAiInsightModalOpen] = useState(false)
+  const [selectedFeedback, setSelectedFeedback] = useState<CustomerFeedback | null>(null)
+  const [batchFeedbackList, setBatchFeedbackList] = useState<CustomerFeedback[]>([])
 
   // 初始化数据
   useEffect(() => {
@@ -48,6 +52,15 @@ export default function EcommerceAnalysisPage() {
     return styles[urgency as keyof typeof styles] || 'bg-gray-100 text-gray-800'
   }
 
+  // 处理批量AI洞察
+  const handleBatchAiInsight = () => {
+    // 获取当前筛选的负面反馈数据
+    const filteredFeedback = feedbackData.filter((item: any) => item.sentiment === 'negative' || item.urgency === 'high')
+    setSelectedFeedback(null) // 设置为null表示批量分析
+    setBatchFeedbackList(filteredFeedback) // 设置批量分析的数据
+    setAiInsightModalOpen(true)
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* 页面标题 */}
@@ -55,7 +68,7 @@ export default function EcommerceAnalysisPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center">
             <ShoppingBag className="w-6 h-6 mr-2 text-primary-600" />
-            电商平台数据分析
+            产品售后数据分析
           </h1>
           <p className="text-gray-600 mt-1">多平台客户反馈智能分析与舆情监控</p>
         </div>
@@ -114,12 +127,24 @@ export default function EcommerceAnalysisPage() {
           feedbackData={feedbackData}
           handleProcessFeedback={handleProcessFeedback}
           getUrgencyStyle={getUrgencyStyle}
+          handleBatchAiInsight={handleBatchAiInsight}
         />
       )}
 
       {activeTab === 'suggestions' && (
         <ProductSuggestionsModule />
       )}
+
+      {/* AI洞察模态框 */}
+      <AIInsightModal
+        isOpen={aiInsightModalOpen}
+        onClose={() => {
+          setAiInsightModalOpen(false)
+          setBatchFeedbackList([])
+        }}
+        feedback={selectedFeedback}
+        feedbackList={batchFeedbackList}
+      />
     </div>
   )
 }
@@ -127,14 +152,23 @@ export default function EcommerceAnalysisPage() {
 
 
 // 反馈处理标签页组件
-function FeedbackTab({ feedbackData, handleProcessFeedback, getUrgencyStyle }: any) {
+function FeedbackTab({ feedbackData, handleProcessFeedback, getUrgencyStyle, handleBatchAiInsight }: any) {
   return (
     <div className="space-y-6">
       {/* 客户反馈详情 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">客户反馈详情</h3>
-          <p className="text-sm text-gray-600 mt-1">负面评论自动转入此列表，需要及时处理</p>
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">客户反馈详情</h3>
+            <p className="text-sm text-gray-600 mt-1">负面评论自动转入此列表，需要及时处理</p>
+          </div>
+          <button
+            onClick={handleBatchAiInsight}
+            className="btn-primary flex items-center bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+          >
+            <Brain className="w-4 h-4 mr-2" />
+            AI洞察
+          </button>
         </div>
 
         <div className="overflow-x-auto">
