@@ -152,7 +152,7 @@ export default function AILLMPrediction({
       setAnalysisTemplate(defaultTemplate)
       setTemplateCharCount(defaultTemplate.length)
     }
-  }, [])
+  }, [analysisTemplate, defaultTemplate])
 
   // 更新字符计数
   useEffect(() => {

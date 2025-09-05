@@ -111,7 +111,8 @@ export default function AIInsightModal({ isOpen, onClose, feedback, feedbackList
         performAIAnalysis()
       }
     }
-  }, [isOpen, feedback, feedbackList])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, feedback, feedbackList, isAnalyzing, isBatchMode, batchAnalysisResult, analysisResult])
 
   // 执行单个反馈AI分析
   const performAIAnalysis = async () => {

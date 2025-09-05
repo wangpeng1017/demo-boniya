@@ -11,7 +11,7 @@ function generateSpecificPricingRecommendations(
   selectedLocation: string,
   ourPrices: { [key: string]: number }
 ) {
-  const recommendations = []
+  const recommendations: any[] = []
 
   // 按产品分组分析
   const productGroups = new Map<string, CompetitorPrice[]>()

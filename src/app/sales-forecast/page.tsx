@@ -549,7 +549,7 @@ export default function SalesForecastPage() {
       {/* 销售热力图 */}
       {activeTab === 'heatmap' && (
         <SalesHeatmap
-          storeName={selectedStoreName}
+          storeName={mockStores.find(s => s.id === selectedStore)?.name || ''}
           productName={selectedProducts.length === 1 ?
             mockProducts.find(p => p.id === selectedProducts[0])?.name || '未选择商品' :
             '多商品组合'
