@@ -449,6 +449,13 @@ export default function CompetitorAnalysisPage() {
                 </div>
               </div>
 
+              {/* 价格趋势分析图表 */}
+              <PriceTrendChart
+                selectedProduct={selectedBrand || '全部品牌'}
+                selectedLocation={selectedLocation}
+                competitorData={filteredData}
+              />
+
               {/* 价格对比表格 */}
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200">
