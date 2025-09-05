@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Download, Brain, TrendingUp, Calendar, Cloud, Thermometer } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Download, Brain, TrendingUp, Calendar, Cloud, Thermometer, ChevronDown, RotateCcw, Save, FileText } from 'lucide-react'
 import { formatNumber } from '@/lib/utils'
 
 interface AILLMPredictionProps {
@@ -11,6 +11,13 @@ interface AILLMPredictionProps {
   selectedProduct: string
   storeName: string
   productName: string
+  selectedProducts?: string[]
+  timeRange?: string
+  filterConditions?: {
+    stores: string[]
+    products: string[]
+    dateRange: string
+  }
 }
 
 interface WeatherData {
@@ -46,16 +53,147 @@ interface AIAnalysisReport {
   predictions: AIPredictionResult[]
 }
 
-export default function AILLMPrediction({ 
-  isOpen, 
-  onClose, 
-  selectedStore, 
-  selectedProduct, 
-  storeName, 
-  productName 
+interface AnalysisTarget {
+  id: string
+  label: string
+  description: string
+  type: 'current' | 'store' | 'product' | 'timeRange' | 'custom'
+}
+
+interface AnalysisTemplate {
+  id: string
+  name: string
+  content: string
+  category: 'forecast' | 'trend' | 'anomaly' | 'custom'
+}
+
+export default function AILLMPrediction({
+  isOpen,
+  onClose,
+  selectedStore,
+  selectedProduct,
+  storeName,
+  productName,
+  selectedProducts = [],
+  timeRange = '未来7天',
+  filterConditions
 }: AILLMPredictionProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisReport | null>(null)
+  const [selectedTarget, setSelectedTarget] = useState<string>('current')
+  const [analysisTemplate, setAnalysisTemplate] = useState<string>('')
+  const [templateCharCount, setTemplateCharCount] = useState(0)
+  const [savedTemplates, setSavedTemplates] = useState<AnalysisTemplate[]>([])
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false)
+  const [customTemplateName, setCustomTemplateName] = useState('')
+
+  // 分析目标选项
+  const analysisTargets: AnalysisTarget[] = [
+    {
+      id: 'current',
+      label: '当前筛选数据',
+      description: `${storeName} - ${productName} (${timeRange})`,
+      type: 'current'
+    },
+    {
+      id: 'store',
+      label: '单个门店数据',
+      description: `${storeName} 的所有商品数据`,
+      type: 'store'
+    },
+    {
+      id: 'product',
+      label: '单个商品数据',
+      description: `${productName} 在所有门店的数据`,
+      type: 'product'
+    },
+    {
+      id: 'timeRange',
+      label: '特定时间段数据',
+      description: '自定义时间范围的销售数据',
+      type: 'timeRange'
+    },
+    {
+      id: 'custom',
+      label: '自定义组合数据',
+      description: '用户自定义的数据组合',
+      type: 'custom'
+    }
+  ]
+
+  // 预设分析模板
+  const presetTemplates: AnalysisTemplate[] = [
+    {
+      id: 'forecast',
+      name: '销量预测模板',
+      content: `你是一位专业的食品零售数据分析师。根据'{storeName}'的'{productName}'历史销售数据（包含日期、销量、星期、天气等维度），以及未来6天的天气预报数据。请基于这些数据预测未来七天的每日销量，并提供详细的分析依据。`,
+      category: 'forecast'
+    },
+    {
+      id: 'trend',
+      name: '趋势分析模板',
+      content: `你是一位专业的数据分析师。请分析'{storeName}'的'{productName}'销售趋势，识别销量变化模式、季节性特征和增长趋势。重点关注：1）长期趋势方向 2）周期性变化 3）异常波动 4）影响因素分析。`,
+      category: 'trend'
+    },
+    {
+      id: 'anomaly',
+      name: '异常检测模板',
+      content: `你是一位专业的异常检测分析师。请分析'{storeName}'的'{productName}'销售数据中的异常情况，识别：1）销量异常波动的时间点 2）异常的可能原因 3）异常对业务的影响 4）预防和应对建议。`,
+      category: 'anomaly'
+    }
+  ]
+
+  // 默认模板内容
+  const defaultTemplate = presetTemplates[0].content
+
+  // 初始化模板内容
+  useEffect(() => {
+    if (!analysisTemplate) {
+      setAnalysisTemplate(defaultTemplate)
+      setTemplateCharCount(defaultTemplate.length)
+    }
+  }, [])
+
+  // 更新字符计数
+  useEffect(() => {
+    setTemplateCharCount(analysisTemplate.length)
+  }, [analysisTemplate])
+
+  // 重置模板为默认值
+  const resetTemplate = () => {
+    setAnalysisTemplate(defaultTemplate)
+  }
+
+  // 保存自定义模板
+  const saveCustomTemplate = () => {
+    if (!customTemplateName.trim() || !analysisTemplate.trim()) {
+      alert('请输入模板名称和内容')
+      return
+    }
+
+    const newTemplate: AnalysisTemplate = {
+      id: `custom_${Date.now()}`,
+      name: customTemplateName,
+      content: analysisTemplate,
+      category: 'custom'
+    }
+
+    setSavedTemplates(prev => [...prev, newTemplate])
+    setCustomTemplateName('')
+    alert('模板保存成功！')
+  }
+
+  // 应用预设模板
+  const applyTemplate = (template: AnalysisTemplate) => {
+    setAnalysisTemplate(template.content)
+    setShowTemplateSelector(false)
+  }
+
+  // 获取当前选中目标的描述
+  const getCurrentTargetDescription = () => {
+    const target = analysisTargets.find(t => t.id === selectedTarget)
+    return target ? target.description : analysisTargets[0].description
+  }
 
   // 生成模拟历史销售数据
   const generateHistoricalData = (): HistoricalData[] => {
@@ -205,8 +343,14 @@ export default function AILLMPrediction({
     
     const avgConfidence = predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length
     
+    // 根据选择的分析对象生成摘要
+    const targetDescription = getCurrentTargetDescription()
+    const templateType = analysisTemplate.includes('预测') ? '预测分析' :
+                        analysisTemplate.includes('趋势') ? '趋势分析' :
+                        analysisTemplate.includes('异常') ? '异常检测' : '智能分析'
+
     const result: AIAnalysisReport = {
-      summary: `基于${storeName}的${productName}历史30天销售数据分析，结合未来7天天气预报和消费模式，AI大语言模型预测未来一周总销量为${Math.round(totalPredicted)}kg。模型识别出周末销量显著高于工作日，天气状况对销量有明显影响。`,
+      summary: `基于${targetDescription}的历史销售数据，使用自定义${templateType}模板进行AI大语言模型分析。预测未来一周总销量为${Math.round(totalPredicted)}kg，平均置信度${Math.round(avgConfidence * 100)}%。分析识别出周末销量显著高于工作日，天气状况对销量有明显影响。`,
       totalPredicted: Math.round(totalPredicted * 100) / 100,
       avgConfidence: Math.round(avgConfidence * 100) / 100,
       keyFactors: [
@@ -284,31 +428,146 @@ export default function AILLMPrediction({
         {/* 内容 */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           {!analysisResult ? (
-            <div className="text-center py-12">
+            <div className="py-8">
               {!isGenerating ? (
-                <div>
-                  <Brain className="w-16 h-16 text-purple-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">AI大语言模型预测分析</h3>
-                  <div className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                    <p className="mb-4">
-                      <strong>分析对象：</strong>{storeName} - {productName}
-                    </p>
-                    <div className="bg-gray-50 p-4 rounded-lg text-left">
-                      <h4 className="font-medium mb-2">分析模板：</h4>
-                      <p className="text-sm">
-                        你是一位专业的食品零售数据分析师。根据'{storeName}'的'{productName}'历史销售数据
-                        （包含日期、销量、星期、天气等维度），以及未来6天的天气预报数据。
-                        请基于这些数据预测未来七天的每日销量，并提供详细的分析依据。
+                <div className="max-w-4xl mx-auto">
+                  <div className="text-center mb-8">
+                    <Brain className="w-16 h-16 text-purple-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">AI大语言模型预测分析</h3>
+                    <p className="text-gray-600">配置分析参数并生成智能预测报告</p>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* 分析对象选择 */}
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                      <h4 className="font-medium text-gray-900 mb-4 flex items-center">
+                        <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                        分析对象选择
+                      </h4>
+                      <div className="relative">
+                        <select
+                          value={selectedTarget}
+                          onChange={(e) => setSelectedTarget(e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
+                        >
+                          {analysisTargets.map((target) => (
+                            <option key={target.id} value={target.id}>
+                              {target.label}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">
+                        <strong>当前选择：</strong>{getCurrentTargetDescription()}
                       </p>
                     </div>
+
+                    {/* 分析模板编辑 */}
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium text-gray-900 flex items-center">
+                          <Brain className="w-5 h-5 mr-2 text-purple-600" />
+                          分析模板
+                        </h4>
+                        <div className="flex items-center space-x-2">
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowTemplateSelector(!showTemplateSelector)}
+                              className="btn-secondary text-sm flex items-center"
+                            >
+                              <FileText className="w-4 h-4 mr-1" />
+                              模板预设
+                              <ChevronDown className="w-4 h-4 ml-1" />
+                            </button>
+                            {showTemplateSelector && (
+                              <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                                <div className="p-2">
+                                  <p className="text-xs text-gray-600 mb-2">预设模板</p>
+                                  {presetTemplates.map((template) => (
+                                    <button
+                                      key={template.id}
+                                      onClick={() => applyTemplate(template)}
+                                      className="w-full text-left p-2 hover:bg-gray-50 rounded text-sm"
+                                    >
+                                      <div className="font-medium text-gray-900">{template.name}</div>
+                                      <div className="text-xs text-gray-600 truncate">{template.content.substring(0, 50)}...</div>
+                                    </button>
+                                  ))}
+                                  {savedTemplates.length > 0 && (
+                                    <>
+                                      <hr className="my-2" />
+                                      <p className="text-xs text-gray-600 mb-2">自定义模板</p>
+                                      {savedTemplates.map((template) => (
+                                        <button
+                                          key={template.id}
+                                          onClick={() => applyTemplate(template)}
+                                          className="w-full text-left p-2 hover:bg-gray-50 rounded text-sm"
+                                        >
+                                          <div className="font-medium text-gray-900">{template.name}</div>
+                                          <div className="text-xs text-gray-600 truncate">{template.content.substring(0, 50)}...</div>
+                                        </button>
+                                      ))}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={resetTemplate}
+                            className="btn-secondary text-sm flex items-center"
+                            title="重置为默认模板"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <textarea
+                          value={analysisTemplate}
+                          onChange={(e) => setAnalysisTemplate(e.target.value)}
+                          placeholder="请输入分析模板..."
+                          className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                        />
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">
+                            字符数: {templateCharCount} / 1000
+                          </span>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="text"
+                              value={customTemplateName}
+                              onChange={(e) => setCustomTemplateName(e.target.value)}
+                              placeholder="模板名称"
+                              className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            />
+                            <button
+                              onClick={saveCustomTemplate}
+                              className="btn-secondary text-sm flex items-center"
+                              disabled={!customTemplateName.trim() || !analysisTemplate.trim()}
+                            >
+                              <Save className="w-4 h-4 mr-1" />
+                              保存模板
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 开始分析按钮 */}
+                    <div className="text-center">
+                      <button
+                        onClick={generateAIPrediction}
+                        disabled={!analysisTemplate.trim()}
+                        className="btn-primary flex items-center mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Brain className="w-4 h-4 mr-2" />
+                        开始AI预测分析
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={generateAIPrediction}
-                    className="btn-primary flex items-center mx-auto"
-                  >
-                    <Brain className="w-4 h-4 mr-2" />
-                    开始AI预测分析
-                  </button>
                 </div>
               ) : (
                 <div>

@@ -8,6 +8,7 @@ import { CompetitorPrice } from '@/types'
 import DataEditModal from '@/components/competitor-analysis/DataEditModal'
 import FileImportModal from '@/components/competitor-analysis/FileImportModal'
 import AIAnalysisReport from '@/components/competitor-analysis/AIAnalysisReport'
+import PriceTrendChart from '@/components/competitor-analysis/PriceTrendChart'
 
 interface OCRResult {
   id: string

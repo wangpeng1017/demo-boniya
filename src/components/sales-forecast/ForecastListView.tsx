@@ -602,6 +602,13 @@ export default function ForecastListView() {
         selectedProduct=""
         storeName={selectedStoreForAI}
         productName={selectedProductForAI}
+        selectedProducts={[]}
+        timeRange="未来7天"
+        filterConditions={{
+          stores: [selectedStoreForAI],
+          products: [selectedProductForAI],
+          dateRange: "未来7天"
+        }}
       />
     </div>
   )

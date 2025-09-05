@@ -7,6 +7,7 @@ import { mockStores, mockProducts, generateMockSalesData } from '@/lib/mockData'
 import { formatCurrency, formatNumber, delay } from '@/lib/utils'
 import ForecastListView from '@/components/sales-forecast/ForecastListView'
 import MultiProductChart from '@/components/sales-forecast/MultiProductChart'
+import SalesHeatmap from '@/components/sales-forecast/SalesHeatmap'
 
 interface ForecastData {
   date: string
@@ -23,7 +24,7 @@ interface AIReport {
 }
 
 export default function SalesForecastPage() {
-  const [activeTab, setActiveTab] = useState<'analysis' | 'list'>('analysis')
+  const [activeTab, setActiveTab] = useState<'analysis' | 'heatmap' | 'list'>('analysis')
   const [selectedStore, setSelectedStore] = useState(mockStores[0].id)
   const [selectedProducts, setSelectedProducts] = useState<string[]>([mockProducts[0].id])
   const [productSearchTerm, setProductSearchTerm] = useState('')
@@ -265,6 +266,17 @@ export default function SalesForecastPage() {
             >
               <TrendingUp className="w-4 h-4 inline mr-2" />
               趋势分析
+            </button>
+            <button
+              onClick={() => setActiveTab('heatmap')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'heatmap'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Calendar className="w-4 h-4 inline mr-2" />
+              销售热力图
             </button>
             <button
               onClick={() => setActiveTab('list')}
@@ -532,6 +544,17 @@ export default function SalesForecastPage() {
         </div>
       )}
         </>
+      )}
+
+      {/* 销售热力图 */}
+      {activeTab === 'heatmap' && (
+        <SalesHeatmap
+          storeName={selectedStoreName}
+          productName={selectedProducts.length === 1 ?
+            mockProducts.find(p => p.id === selectedProducts[0])?.name || '未选择商品' :
+            '多商品组合'
+          }
+        />
       )}
 
       {/* 预测列表视图 */}
