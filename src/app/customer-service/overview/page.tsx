@@ -4,9 +4,19 @@ import { useMemo, useState } from 'react'
 import { Brain, Send, MessageSquare, Phone, ShoppingCart, Calendar, BarChart3 } from 'lucide-react'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from 'recharts'
 import { delay, formatDate } from '@/lib/utils'
-import { mockCustomerFeedback } from '@/lib/mockData'
 
-// 简单的400来电模拟数据（近30天）
+// 电商平台数据接口
+interface EComComplaint {
+  id: string
+  complaintDate: string
+  issue: string
+  product: string
+  address: string
+  result: string
+  createdAt: string // ISO for filtering
+}
+
+// 400来电数据接口
 interface CallRecord {
   id: string
   date: string // ISO
@@ -15,6 +25,21 @@ interface CallRecord {
   summary: string
 }
 
+// 电商平台真实数据（近30天）
+const ecommerceData: EComComplaint[] = [
+  { id: '1', complaintDate: '2024.01.27', issue: '产品有头发', product: '福运到礼盒', address: '黑龙江省绥化市兰西县', result: '退1赔3', createdAt: new Date(Date.now() - 3*86400000).toISOString() },
+  { id: '2', complaintDate: '2024.04.15', issue: '未开封有毛发', product: '觅技德式黑山猪烤肠480g (黑椒味)', address: '北京市大兴区', result: '额外赔付800', createdAt: new Date(Date.now() - 5*86400000).toISOString() },
+  { id: '3', complaintDate: '2024.05.04', issue: '产品吃出红色球状物体', product: '波尼亚烤肠五香(160g)', address: '山东省青岛市市北区', result: '额外赔付110', createdAt: new Date(Date.now() - 7*86400000).toISOString() },
+  { id: '4', complaintDate: '2024.06.08', issue: '产品发霉', product: '手撕牛肉干五香味150g(罐装)', address: '广东省东莞市大朗镇', result: '额外赔付500+订单退款', createdAt: new Date(Date.now() - 10*86400000).toISOString() },
+  { id: '5', complaintDate: '2024.06.16', issue: '产品吃出棉线', product: '营养芝士早餐肠（150g）', address: '黑龙江省哈尔滨市南岗区', result: '额外赔付1000+订单退款', createdAt: new Date(Date.now() - 12*86400000).toISOString() },
+  { id: '6', complaintDate: '2024.06.14', issue: '产品吃到红色棉线', product: '黑椒猪肉早餐肠（150g）', address: '广东省佛山市顺德区', result: '额外赔付800+订单退款', createdAt: new Date(Date.now() - 14*86400000).toISOString() },
+  { id: '7', complaintDate: '2024.06.16', issue: '未开封有毛发', product: '觅技烤肠 200g(黑椒味)', address: '甘肃省平凉市泾川县', result: '额外赔付1000+订单退款', createdAt: new Date(Date.now() - 15*86400000).toISOString() },
+  { id: '8', complaintDate: '2024.06.17', issue: '产品吃出毛发', product: '觅技烤肠200g(原味)', address: '江苏省徐州市云龙区', result: '诉求赔付1000+订单退款，目前还在前期协商中', createdAt: new Date(Date.now() - 17*86400000).toISOString() },
+  { id: '9', complaintDate: '2024.6.20', issue: '产品吃出骨片，划伤了嘴', product: '黑森林1000g*3', address: '山东省潍坊市昌邑市', result: '诉求赔付1000+订单退款', createdAt: new Date(Date.now() - 20*86400000).toISOString() },
+  { id: '10', complaintDate: '2024.6.21', issue: '产品吃出毛发', product: '卢森堡猪肉火腿500g*2个', address: '山东省青岛市平度市', result: '订单退款', createdAt: new Date(Date.now() - 22*86400000).toISOString() },
+]
+
+// 400来电模拟数据（近30天）
 const mockCalls: CallRecord[] = [
   { id: 'C400-001', date: new Date().toISOString(), region: '青岛市北', type: '渠道咨询', summary: '询问清晨提货与门店位置' },
   { id: 'C400-002', date: new Date(Date.now() - 2*86400000).toISOString(), region: '即墨', type: '价格咨询', summary: '批发价政策咨询' },
@@ -22,6 +47,10 @@ const mockCalls: CallRecord[] = [
   { id: 'C400-004', date: new Date(Date.now() - 9*86400000).toISOString(), region: '黄岛', type: '质量投诉', summary: '产品不新鲜' },
   { id: 'C400-005', date: new Date(Date.now() - 14*86400000).toISOString(), region: '济南', type: '售后流程', summary: '退换货流程咨询' },
   { id: 'C400-006', date: new Date(Date.now() - 18*86400000).toISOString(), region: '潍坊', type: '其它', summary: '发票开具' },
+  { id: 'C400-007', date: new Date(Date.now() - 3*86400000).toISOString(), region: '青岛市北', type: '质量投诉', summary: '产品包装破损' },
+  { id: 'C400-008', date: new Date(Date.now() - 7*86400000).toISOString(), region: '黄岛', type: '渠道咨询', summary: '代理商加盟政策' },
+  { id: 'C400-009', date: new Date(Date.now() - 11*86400000).toISOString(), region: '济南', type: '价格咨询', summary: '团购优惠政策' },
+  { id: 'C400-010', date: new Date(Date.now() - 15*86400000).toISOString(), region: '潍坊', type: '质量投诉', summary: '产品有异味' },
 ]
 
 // 过去30天内数据筛选
@@ -33,12 +62,12 @@ const withinDays = (iso: string, days = 30) => {
 export default function CustomerServiceOverviewPage() {
   // 聚合来源：400 + 电商平台
   const calls30 = useMemo(() => mockCalls.filter(r => withinDays(r.date)), [])
-  const ecommerce30 = useMemo(() => mockCustomerFeedback.filter(r => withinDays(r.createdAt)), [])
+  const ecommerce30 = useMemo(() => ecommerceData.filter(r => withinDays(r.createdAt)), [])
 
   // issue 统计（电商平台）
   const issueCount = useMemo(() => {
     const map = new Map<string, number>()
-    ecommerce30.forEach(f => f.issues.forEach(i => map.set(i, (map.get(i) || 0) + 1)))
+    ecommerce30.forEach(f => map.set(f.issue, (map.get(f.issue) || 0) + 1))
     return Array.from(map.entries()).map(([issue, count]) => ({ issue, count }))
   }, [ecommerce30])
 
@@ -64,14 +93,146 @@ export default function CustomerServiceOverviewPage() {
     setLoading(true)
     setAnswer('')
     await delay(900)
-    // 生成一个基于聚合数据的简单分析文本（模拟AI）
-    const topIssue = issueCount.sort((a,b)=>b.count-a.count)[0]?.issue || '无'
-    const topCall = callTypeStats.sort((a,b)=>b.count-a.count)[0]?.type || '无'
-    const txt = `问题总览：近30天共接收电商平台反馈${ecommerce30.length}条，400来电${calls30.length}条。\n`+
-      `电商平台TOP问题：${topIssue}；400来电TOP类型：${topCall}。\n`+
-      `建议：1）针对“${topIssue}”建立专项排查与复盘；2）为“${topCall}”编写SOP与话术并在市北/黄岛优先试点；3）建立高风险问题（异物、不新鲜）红线预警，要求24小时闭环。\n`+
-      `以上为依据当前聚合数据生成的自动分析（Prompt: ${prompt}）。`
-    setAnswer(txt)
+    
+    let analysisText = ''
+    
+    if (prompt.includes('投诉最多') && prompt.includes('TOP5')) {
+      // 电商平台投诉TOP5分析
+      const sortedIssues = issueCount.sort((a,b) => b.count - a.count).slice(0, 5)
+      analysisText = `【近一个月电商平台投诉类型TOP5分析】\n\n`
+      
+      sortedIssues.forEach((item, idx) => {
+        analysisText += `${idx + 1}. ${item.issue}：${item.count}次\n`
+      })
+      
+      analysisText += `\n【改善建议】\n\n`
+      analysisText += `1. 针对“毛发”问题（占比70%）：\n`
+      analysisText += `   - 紧急成立专项小组，追源进入路径（原料、生产线、包装）\n`
+      analysisText += `   - 升级生产车间防护措施：全员必须佩戴发网、口罩、手套\n`
+      analysisText += `   - 引入高精度金属探测仪和异物检测系统\n`
+      analysisText += `   - 实施每批次产品留样制度，便于追溯\n\n`
+      
+      analysisText += `2. 针对“棉线/异物”问题：\n`
+      analysisText += `   - 检查包装机器设备，更换老化零件\n`
+      analysisText += `   - 加强员工培训，严禁携带非生产物品进入车间\n`
+      analysisText += `   - 建立“清洁验证”流程，每班次记录\n\n`
+      
+      analysisText += `3. 针对“发霉”问题：\n`
+      analysisText += `   - 优化仓储条件：温度控制在0-4℃，湿度控制在60%以下\n`
+      analysisText += `   - 实施先进先出（FIFO）库存管理\n`
+      analysisText += `   - 缩短产品在途时间，加快周转\n\n`
+      
+      analysisText += `4. 预防措施：\n`
+      analysisText += `   - 建立每日质量巡检制度\n`
+      analysisText += `   - 启动高风险问题红线预警机制\n`
+      analysisText += `   - 要求所有质量投诉24小时内闭环处理`
+      
+    } else if (prompt.includes('400') && prompt.includes('区域') && prompt.includes('TOP3')) {
+      // 400线下问题分区域分析
+      const regionStats = new Map<string, Map<string, number>>()
+      calls30.forEach(c => {
+        if (!regionStats.has(c.region)) regionStats.set(c.region, new Map())
+        const types = regionStats.get(c.region)!
+        types.set(c.type, (types.get(c.type) || 0) + 1)
+      })
+      
+      analysisText = `【近一个月400来电分区域问题TOP3分析】\n\n`
+      
+      regionStats.forEach((types, region) => {
+        const sorted = Array.from(types.entries()).sort((a,b) => b[1] - a[1]).slice(0, 3)
+        analysisText += `■ ${region}地区：\n`
+        sorted.forEach((item, idx) => {
+          analysisText += `  ${idx + 1}. ${item[0]}：${item[1]}次\n`
+        })
+        analysisText += `\n`
+      })
+      
+      analysisText += `【区域性建议】\n\n`
+      analysisText += `1. 青岛市北区：\n`
+      analysisText += `   - 重点问题：渠道咨询、质量投诉\n`
+      analysisText += `   - 措施：增设2家清晨提货点（浮山后批发市场附近）\n`
+      analysisText += `   - 安排专人负责B2B客户对接\n\n`
+      
+      analysisText += `2. 黄岛区：\n`
+      analysisText += `   - 重点问题：质量投诉、渠道咨询\n`
+      analysisText += `   - 措施：加强运输冷链管控，减少产品变质\n`
+      analysisText += `   - 开发更多合作代理商\n\n`
+      
+      analysisText += `3. 济南/潍坊区域：\n`
+      analysisText += `   - 重点问题：价格咨询、售后流程\n`
+      analysisText += `   - 措施：制定明确的区域价格政策\n`
+      analysisText += `   - 简化退换货流程，提高处理效率\n\n`
+      
+      analysisText += `4. 统一措施：\n`
+      analysisText += `   - 编制《400客服标准话术手册》\n`
+      analysisText += `   - 建立FAQ知识库，快速响应常见问题\n`
+      analysisText += `   - 每周进行客服培训，提升服务质量`
+      
+    } else if (prompt.includes('售后服务报告')) {
+      // 综合售后服务报告
+      const totalComplaints = ecommerce30.length + calls30.length
+      const qualityIssues = ecommerce30.filter(e => 
+        e.issue.includes('毛发') || e.issue.includes('异物') || e.issue.includes('发霉') || e.issue.includes('骨片')
+      ).length + calls30.filter(c => c.type === '质量投诉').length
+      
+      analysisText = `【近一个月售后服务综合报告】\n\n`
+      analysisText += `生成日期：${formatDate(new Date())}\n\n`
+      
+      analysisText += `一、关键指标\n`
+      analysisText += `• 总投诉量：${totalComplaints}件（电商${ecommerce30.length}件 + 400来电${calls30.length}件）\n`
+      analysisText += `• 质量问题占比：${Math.round(qualityIssues/totalComplaints*100)}%\n`
+      analysisText += `• 高额赔付案件：${ecommerce30.filter(e => e.result.includes('1000')).length}件\n`
+      analysisText += `• 日均投诉量：${(totalComplaints/30).toFixed(1)}件\n\n`
+      
+      analysisText += `二、问题分布\n`
+      analysisText += `1. 电商平台主要问题：\n`
+      issueCount.sort((a,b) => b.count - a.count).slice(0, 3).forEach(item => {
+        analysisText += `   • ${item.issue}：${item.count}件（${Math.round(item.count/ecommerce30.length*100)}%）\n`
+      })
+      analysisText += `\n2. 400来电主要类型：\n`
+      callTypeStats.sort((a,b) => b.count - a.count).slice(0, 3).forEach(item => {
+        analysisText += `   • ${item.type}：${item.count}件（${Math.round(item.count/calls30.length*100)}%）\n`
+      })
+      
+      analysisText += `\n三、区域热点\n`
+      analysisText += `• 高发区域：青岛市北区、黄岛区（400投诉集中）\n`
+      analysisText += `• 电商投诉分布：山东省（5件）、广东省（2件）、黑龙江省（2件）\n\n`
+      
+      analysisText += `四、改进建议\n`
+      analysisText += `1. 紧急措施（一周内）：\n`
+      analysisText += `   • 成立“毛发问题”专项整改小组\n`
+      analysisText += `   • 对所有生产线进行彻底清洁和消毒\n`
+      analysisText += `   • 加强员工个人卫生管理\n\n`
+      
+      analysisText += `2. 短期措施（一个月内）：\n`
+      analysisText += `   • 升级质量检测设备\n`
+      analysisText += `   • 优化仓储环境和流程\n`
+      analysisText += `   • 建立全流程追溯体系\n\n`
+      
+      analysisText += `3. 长期措施（三个月内）：\n`
+      analysisText += `   • 导入ISO 22000食品安全管理体系\n`
+      analysisText += `   • 建立供应商质量评估体系\n`
+      analysisText += `   • 开发智能质量监控系统\n\n`
+      
+      analysisText += `五、下周行动清单\n`
+      analysisText += `☑ 周一：召开质量安全紧急会议，成立专项小组\n`
+      analysisText += `☑ 周二：全面清查生产线，找出潜在风险点\n`
+      analysisText += `☑ 周三：启动员工再培训，强化卫生意识\n`
+      analysisText += `☑ 周四：与设备供应商沟通升级方案\n`
+      analysisText += `☑ 周五：制定《质量管控红线制度》\n`
+      analysisText += `☑ 周末：复盘本周改进成果，准备下周计划`
+      
+    } else {
+      // 默认分析
+      const topIssue = issueCount.sort((a,b)=>b.count-a.count)[0]?.issue || '无'
+      const topCall = callTypeStats.sort((a,b)=>b.count-a.count)[0]?.type || '无'
+      analysisText = `问题总览：近30天共接收电商平台反馈${ecommerce30.length}条，400来电${calls30.length}条。\n`+
+        `电商平台TOP问题：${topIssue}；400来电TOP类型：${topCall}。\n`+
+        `建议：1）针对"${topIssue}"建立专项排查与复盘；2）为"${topCall}"编写SOP与话术并在市北/黄岛优先试点；3）建立高风险问题（异物、不新鲜）红线预警，要求24小时闭环。\n`+
+        `以上为依据当前聚合数据生成的自动分析（Prompt: ${prompt}）。`
+    }
+    
+    setAnswer(analysisText)
     setLoading(false)
   }
 
@@ -165,16 +326,16 @@ export default function CustomerServiceOverviewPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-3 py-2 text-left">时间</th>
-                    <th className="px-3 py-2 text-left">问题摘要</th>
-                    <th className="px-3 py-2 text-left">标签</th>
+                    <th className="px-3 py-2 text-left">产品及问题</th>
+                    <th className="px-3 py-2 text-left">处理结果</th>
                   </tr>
                 </thead>
                 <tbody>
                   {ecommerce30.map(f => (
                     <tr key={f.id} className="border-t">
                       <td className="px-3 py-2 whitespace-nowrap">{formatDate(f.createdAt)}</td>
-                      <td className="px-3 py-2">{f.summary}</td>
-                      <td className="px-3 py-2 text-gray-600">{f.issues.join('、')}</td>
+                      <td className="px-3 py-2">{f.product} - {f.issue}</td>
+                      <td className="px-3 py-2 text-gray-600">{f.result}</td>
                     </tr>
                   ))}
                 </tbody>
