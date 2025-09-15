@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, AlertTriangle, CheckCircle, Clock, Smartphone, TrendingUp, MapPin, Calendar, Eye, MoreVertical } from 'lucide-react'
+import { Bell, AlertTriangle, CheckCircle, Clock, Smartphone, TrendingUp, MapPin, Calendar, Eye, MoreVertical, ChevronLeft, Search, Filter } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 
 interface Notification {
@@ -93,6 +93,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
   const [filter, setFilter] = useState<'all' | 'unread' | 'price-adjustment'>('all')
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
+  const [showDetail, setShowDetail] = useState(false)
 
   // 标记为已读
   const markAsRead = (id: string) => {
@@ -135,273 +136,279 @@ export default function NotificationsPage() {
     }
   }
 
-  return (
-    <div className="p-6 space-y-6">
-      {/* 页面标题 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            <Bell className="w-6 h-6 mr-2 text-primary-600" />
-            消息通知
-            {unreadCount > 0 && (
-              <span className="ml-2 bg-red-500 text-white text-sm px-2 py-1 rounded-full">
-                {unreadCount}
-              </span>
-            )}
-          </h1>
-          <p className="text-gray-600 mt-1">实时接收系统推送和业务通知</p>
-        </div>
-        {unreadCount > 0 && (
-          <button
-            onClick={markAllAsRead}
-            className="btn-secondary text-sm flex items-center"
-          >
-            <CheckCircle className="w-4 h-4 mr-1" />
-            标记全部已读
-          </button>
-        )}
-      </div>
+  // 处理点击消息
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.read) markAsRead(notification.id)
+    setSelectedNotification(notification)
+    setShowDetail(true)
+  }
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-sm p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-blue-100 text-sm font-medium">总通知数</p>
-              <p className="text-3xl font-bold">{notifications.length}</p>
+  // 移动端列表页面
+  if (!showDetail) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        {/* 移动端头部 */}
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-gray-900">企业微信消息</h1>
+            <div className="flex items-center space-x-3">
+              <button className="text-gray-600">
+                <Search className="w-5 h-5" />
+              </button>
+              <button className="text-gray-600">
+                <Filter className="w-5 h-5" />
+              </button>
             </div>
-            <Bell className="w-8 h-8 text-blue-200" />
+          </div>
+          
+          {/* 筛选标签 */}
+          <div className="px-4 pb-3 flex space-x-3 overflow-x-auto">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap ${
+                filter === 'all' 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              全部 {unreadCount > 0 && `(${unreadCount})`}
+            </button>
+            <button
+              onClick={() => setFilter('unread')}
+              className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap ${
+                filter === 'unread' 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              未读
+            </button>
+            <button
+              onClick={() => setFilter('price-adjustment')}
+              className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap ${
+                filter === 'price-adjustment' 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              调价建议
+            </button>
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-lg shadow-sm p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-red-100 text-sm font-medium">未读消息</p>
-              <p className="text-3xl font-bold">{unreadCount}</p>
+        {/* 消息列表 */}
+        <div className="bg-white">
+          {filteredNotifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Bell className="w-16 h-16 text-gray-300 mb-4" />
+              <p className="text-gray-500">暂无消息</p>
             </div>
-            <AlertTriangle className="w-8 h-8 text-red-200" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm font-medium">调价建议</p>
-              <p className="text-3xl font-bold">
-                {notifications.filter(n => n.type === 'price-adjustment').length}
-              </p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-green-200" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-sm p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-purple-100 text-sm font-medium">移动端推送</p>
-              <p className="text-3xl font-bold">
-                {notifications.filter(n => n.source === 'mobile').length}
-              </p>
-            </div>
-            <Smartphone className="w-8 h-8 text-purple-200" />
-          </div>
-        </div>
-      </div>
-
-      {/* 筛选选项 */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              filter === 'all' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            全部通知 ({notifications.length})
-          </button>
-          <button
-            onClick={() => setFilter('unread')}
-            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              filter === 'unread' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            未读消息 ({unreadCount})
-          </button>
-          <button
-            onClick={() => setFilter('price-adjustment')}
-            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              filter === 'price-adjustment' ? 'bg-primary-100 text-primary-700' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            调价建议 ({notifications.filter(n => n.type === 'price-adjustment').length})
-          </button>
-        </div>
-      </div>
-
-      {/* 通知列表 */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 divide-y divide-gray-200">
-        {filteredNotifications.length === 0 ? (
-          <div className="p-12 text-center">
-            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">暂无通知</h3>
-            <p className="text-gray-600">没有找到符合条件的通知消息</p>
-          </div>
-        ) : (
-          filteredNotifications.map((notification) => {
-            const TypeIcon = getTypeIcon(notification.type)
-            return (
-              <div
-                key={notification.id}
-                className={`p-6 hover:bg-gray-50 cursor-pointer transition-colors ${
-                  !notification.read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-                }`}
-                onClick={() => {
-                  if (!notification.read) markAsRead(notification.id)
-                  setSelectedNotification(notification)
-                }}
-              >
-                <div className="flex items-start space-x-4">
-                  <div className={`p-2 rounded-full ${
-                    notification.type === 'price-adjustment' ? 'bg-green-100' :
-                    notification.type === 'warning' ? 'bg-red-100' : 'bg-blue-100'
-                  }`}>
-                    <TypeIcon className={`w-5 h-5 ${
-                      notification.type === 'price-adjustment' ? 'text-green-600' :
-                      notification.type === 'warning' ? 'text-red-600' : 'text-blue-600'
-                    }`} />
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className={`text-sm font-medium ${
-                          !notification.read ? 'text-gray-900' : 'text-gray-700'
-                        }`}>
-                          {notification.title}
-                        </h3>
-                        <p className={`mt-1 text-sm ${
-                          !notification.read ? 'text-gray-800' : 'text-gray-600'
-                        }`}>
-                          {notification.message}
-                        </p>
-                        
-                        {/* 调价建议的具体数据 */}
-                        {notification.type === 'price-adjustment' && notification.data && (
-                          <div className="mt-3 p-3 bg-gray-50 rounded-md">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                              <div>
-                                <span className="text-gray-500">区域：</span>
-                                <span className="font-medium">{notification.data.region}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">产品：</span>
-                                <span className="font-medium">{notification.data.product}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">当前价格：</span>
-                                <span className="font-medium">{notification.data.currentPrice}元/kg</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">建议价格：</span>
-                                <span className="font-medium text-green-600">{notification.data.suggestedPrice}元/kg</span>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center space-x-2 ml-4">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPriorityStyle(notification.priority)}`}>
-                          {notification.priority === 'high' ? '高' : notification.priority === 'medium' ? '中' : '低'}优先级
-                        </span>
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        )}
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {filteredNotifications.map((notification) => {
+                const TypeIcon = getTypeIcon(notification.type)
+                return (
+                  <div
+                    key={notification.id}
+                    className="flex items-start p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    {/* 左侧图标 */}
+                    <div className="flex-shrink-0">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                        notification.type === 'price-adjustment' ? 'bg-green-100' :
+                        notification.type === 'warning' ? 'bg-red-100' : 'bg-blue-100'
+                      }`}>
+                        <TypeIcon className={`w-6 h-6 ${
+                          notification.type === 'price-adjustment' ? 'text-green-600' :
+                          notification.type === 'warning' ? 'text-red-600' : 'text-blue-600'
+                        }`} />
                       </div>
                     </div>
                     
-                    <div className="mt-3 flex items-center text-xs text-gray-500 space-x-4">
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {formatDateTime(notification.timestamp)}
+                    {/* 中间内容 */}
+                    <div className="flex-1 ml-3 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className={`text-base font-medium truncate pr-2 ${
+                          !notification.read ? 'text-gray-900' : 'text-gray-700'
+                        }`}>
+                          价格建议通知
+                        </h3>
+                        <span className="text-xs text-gray-500 flex-shrink-0">
+                          {new Date(notification.timestamp).toLocaleTimeString('zh-CN', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
                       </div>
-                      <div className="flex items-center">
-                        <Smartphone className="w-3 h-3 mr-1" />
-                        {notification.source === 'mobile' ? '移动端' : notification.source === 'web' ? 'Web端' : '系统'}
+                      <p className={`text-sm mt-1 line-clamp-2 ${
+                        !notification.read ? 'text-gray-800' : 'text-gray-600'
+                      }`}>
+                        {notification.message}
+                      </p>
+                      
+                      {/* 标签 */}
+                      {notification.type === 'price-adjustment' && notification.data && (
+                        <div className="flex items-center mt-2 space-x-2">
+                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                            {notification.data.region}
+                          </span>
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                            建议调整
+                          </span>
+                          {notification.priority === 'high' && (
+                            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                              紧急
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* 未读标记 */}
+                    {!notification.read && (
+                      <div className="flex-shrink-0 ml-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                       </div>
-                      <div className="flex items-center">
-                        <span>{notification.category}</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+
+  // 移动端详情页面
+  if (showDetail && selectedNotification) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        {/* 详情页头部 */}
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="px-4 py-3 flex items-center">
+            <button 
+              onClick={() => setShowDetail(false)}
+              className="mr-3"
+            >
+              <ChevronLeft className="w-6 h-6 text-gray-700" />
+            </button>
+            <h1 className="text-lg font-semibold text-gray-900 flex-1">消息详情</h1>
+            <button className="text-gray-600">
+              <MoreVertical className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* 详情内容 */}
+        <div className="bg-white mt-2">
+          {/* 消息头部 */}
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-start">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                selectedNotification.type === 'price-adjustment' ? 'bg-green-100' :
+                selectedNotification.type === 'warning' ? 'bg-red-100' : 'bg-blue-100'
+              }`}>
+                {getTypeIcon(selectedNotification.type) === TrendingUp && <TrendingUp className="w-6 h-6 text-green-600" />}
+                {getTypeIcon(selectedNotification.type) === AlertTriangle && <AlertTriangle className="w-6 h-6 text-red-600" />}
+                {getTypeIcon(selectedNotification.type) === Bell && <Bell className="w-6 h-6 text-blue-600" />}
+              </div>
+              <div className="ml-3 flex-1">
+                <h2 className="text-lg font-semibold text-gray-900">价格建议通知</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {formatDateTime(selectedNotification.timestamp)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 消息内容 */}
+          <div className="p-4">
+            <div className="text-gray-800 leading-relaxed">
+              {selectedNotification.message}
+            </div>
+
+            {/* 调价建议详情 */}
+            {selectedNotification.type === 'price-adjustment' && selectedNotification.data && (
+              <div className="mt-6">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-base font-semibold text-gray-900 mb-4">调价建议详情</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">区域</span>
+                      <span className="font-medium text-gray-900">{selectedNotification.data.region}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">产品</span>
+                      <span className="font-medium text-gray-900">{selectedNotification.data.product}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">当前价格</span>
+                      <span className="font-medium text-gray-900">{selectedNotification.data.currentPrice}元/kg</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">建议价格</span>
+                      <span className="font-medium text-green-600 text-lg">{selectedNotification.data.suggestedPrice}元/kg</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">竞品价格</span>
+                      <span className="font-medium text-gray-900">{selectedNotification.data.rivalPrice}元/kg</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-start">
+                      <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5 mr-2 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 mb-1">调价理由</p>
+                        <p className="text-sm text-gray-600">{selectedNotification.data.reasoning}</p>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* 操作按钮 */}
+                <div className="mt-6 flex space-x-3">
+                  <button className="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 active:bg-green-700">
+                    立即调整价格
+                  </button>
+                  <button className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 active:bg-gray-400">
+                    稍后处理
+                  </button>
                 </div>
               </div>
-            )
-          })
-        )}
-      </div>
+            )}
 
-      {/* 通知详情模态框 */}
-      {selectedNotification && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">通知详情</h2>
-              <button
-                onClick={() => setSelectedNotification(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ×
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium text-gray-900">{selectedNotification.title}</h3>
-                  <p className="mt-2 text-gray-700">{selectedNotification.message}</p>
-                </div>
-                
-                {selectedNotification.type === 'price-adjustment' && selectedNotification.data && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-3">调价建议详情</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-sm text-gray-600">区域</div>
-                        <div className="font-medium">{selectedNotification.data.region}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600">产品</div>
-                        <div className="font-medium">{selectedNotification.data.product}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600">当前价格</div>
-                        <div className="font-medium">{selectedNotification.data.currentPrice}元/kg</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600">建议价格</div>
-                        <div className="font-medium text-green-600">{selectedNotification.data.suggestedPrice}元/kg</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600">竞品价格</div>
-                        <div className="font-medium">{selectedNotification.data.rivalPrice}元/kg</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600">调价理由</div>
-                        <div className="font-medium">{selectedNotification.data.reasoning}</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="text-sm text-gray-500">
-                  推送时间：{formatDateTime(selectedNotification.timestamp)}
-                </div>
+            {/* 其他信息 */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">消息来源</span>
+                <span className="text-gray-700">
+                  {selectedNotification.source === 'mobile' ? '移动端推送' : 
+                   selectedNotification.source === 'web' ? 'Web端' : '系统'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm mt-3">
+                <span className="text-gray-500">优先级</span>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  selectedNotification.priority === 'high' ? 'bg-red-100 text-red-700' :
+                  selectedNotification.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-green-100 text-green-700'
+                }`}>
+                  {selectedNotification.priority === 'high' ? '高' : 
+                   selectedNotification.priority === 'medium' ? '中' : '低'}优先级
+                </span>
               </div>
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    )
+  }
+
+  return null
   )
 }
