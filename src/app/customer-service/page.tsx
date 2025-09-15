@@ -65,7 +65,12 @@ const mockTickets: CustomerTicket[] = [
   }
 ]
 
+import After400View from '@/components/customer-service/After400View'
+import EcommerceView from '@/components/customer-service/EcommerceView'
+import OverviewView from '@/components/customer-service/OverviewView'
+
 export default function CustomerServicePage() {
+  const [subTab, setSubTab] = useState<'dashboard'|'after400'|'ecommerce'|'overview'>('dashboard')
   const [tickets, setTickets] = useState<CustomerTicket[]>(mockTickets)
   const [selectedStatus, setSelectedStatus] = useState('全部')
   const [selectedPriority, setSelectedPriority] = useState('全部')
@@ -186,8 +191,17 @@ export default function CustomerServicePage() {
           智能客服管理
         </h1>
         <p className="text-gray-600 mt-1">统一客服工单管理与智能分析系统</p>
+        {/* 子菜单切换（同页内Tab） */}
+        <div className="mt-3 flex items-center space-x-6 text-sm">
+          <button onClick={() => setSubTab('dashboard')} className={`pb-1 border-b-2 ${subTab==='dashboard'?'border-primary-500 text-primary-600':'border-transparent text-gray-600 hover:text-gray-900'}`}>总览</button>
+          <button onClick={() => setSubTab('after400')} className={`pb-1 border-b-2 ${subTab==='after400'?'border-primary-500 text-primary-600':'border-transparent text-gray-600 hover:text-gray-900'}`}>400售后分析</button>
+          <button onClick={() => setSubTab('ecommerce')} className={`pb-1 border-b-2 ${subTab==='ecommerce'?'border-primary-500 text-primary-600':'border-transparent text-gray-600 hover:text-gray-900'}`}>电商平台售后分析</button>
+          <button onClick={() => setSubTab('overview')} className={`pb-1 border-b-2 ${subTab==='overview'?'border-primary-500 text-primary-600':'border-transparent text-gray-600 hover:text-gray-900'}`}>综合数据分析</button>
+        </div>
       </div>
 
+      {subTab==='dashboard' && (
+      <>
       {/* 数据概览 */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -404,6 +418,26 @@ export default function CustomerServicePage() {
           ))}
         </div>
       </div>
+      </>
+      )}
+
+      {subTab==='after400' && (
+        <div className="mt-4">
+          <After400View />
+        </div>
+      )}
+
+      {subTab==='ecommerce' && (
+        <div className="mt-4">
+          <EcommerceView />
+        </div>
+      )}
+
+      {subTab==='overview' && (
+        <div className="mt-4">
+          <OverviewView />
+        </div>
+      )}
     </div>
   )
 }
