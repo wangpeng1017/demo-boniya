@@ -13,16 +13,18 @@ import {
   Scan,
   Home,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Database,
+  HeadphonesIcon
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navigation = [
   { name: '首页', href: '/', icon: Home },
-  { name: '门店销售数量预测', href: '/sales-forecast', icon: BarChart3 },
+  { name: '市场信息管理', href: '/market-info', icon: Database },
   { name: '竞品价格分析', href: '/competitor-analysis', icon: TrendingUp },
-  { name: '电商平台数据分析', href: '/ecommerce-analysis', icon: ShoppingBag },
-  { name: '智能客服管理', href: '/customer-service', icon: MessageSquare },
+  { name: '售后服务管理', href: '/customer-service', icon: HeadphonesIcon },
+  { name: '门店销售数量预测', href: '/sales-forecast', icon: BarChart3 },
   { name: '门店运营标准化管理', href: '/store-management', icon: Store },
   { name: '产品品质智能控制', href: '/quality-control', icon: Shield },
   { name: '称重商品自动识别', href: '/product-recognition', icon: Scan },

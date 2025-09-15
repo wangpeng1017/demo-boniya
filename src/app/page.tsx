@@ -43,12 +43,12 @@ const recentActivities = [
 ]
 
 const moduleStats = [
+  { name: '市场信息', icon: Brain, value: '87.3%', label: '信息处理率', trend: '+3.2%', color: 'purple' },
   { name: '销售预测', icon: BarChart3, value: '94.2%', label: '预测准确率', trend: '+2.1%', color: 'blue' },
   { name: '竞品分析', icon: TrendingUp, value: '156', label: '监控产品', trend: '+12', color: 'green' },
   { name: '客服管理', icon: MessageSquare, value: '23', label: '待处理工单', trend: '-5', color: 'orange' },
-  { name: '门店管理', icon: Store, value: '98.5%', label: '合规率', trend: '+1.2%', color: 'purple' },
-  { name: '品质控制', icon: Shield, value: '99.1%', label: '检测准确率', trend: '+0.3%', color: 'red' },
-  { name: '商品识别', icon: Scan, value: '97.8%', label: '识别准确率', trend: '+1.5%', color: 'indigo' },
+  { name: '门店管理', icon: Store, value: '98.5%', label: '合规率', trend: '+1.2%', color: 'red' },
+  { name: '品质控制', icon: Shield, value: '99.1%', label: '检测准确率', trend: '+0.3%', color: 'indigo' },
 ]
 
 export default function HomePage() {
@@ -193,7 +193,8 @@ export default function HomePage() {
           {moduleStats.map((module, index) => (
             <Link
               key={index}
-              href={`/${module.name === '销售预测' ? 'sales-forecast' :
+              href={`/${module.name === '市场信息' ? 'market-info' :
+                      module.name === '销售预测' ? 'sales-forecast' :
                       module.name === '竞品分析' ? 'competitor-analysis' :
                       module.name === '客服管理' ? 'customer-service' :
                       module.name === '门店管理' ? 'store-management' :
@@ -460,7 +461,7 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/ecommerce-analysis"
+              href="/market-info"
               className="block p-4 border border-gray-200 rounded-lg hover:shadow-md hover:border-purple-300 transition-all duration-200 group"
             >
               <div className="flex items-center justify-between">
@@ -470,9 +471,9 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors">
-                      AI洞察分析
+                      市场信息管理
                     </h4>
-                    <p className="text-sm text-gray-600">查看最新的客户反馈AI分析</p>
+                    <p className="text-sm text-gray-600">查看最新的市场信息和反馈分析</p>
                   </div>
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 transition-colors" />
