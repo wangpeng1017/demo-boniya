@@ -15,7 +15,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Database,
-  HeadphonesIcon
+  HeadphonesIcon,
+  Bell
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,10 @@ const navigation = [
   { name: '门店运营标准化管理', href: '/store-management', icon: Store },
   { name: '产品品质智能控制', href: '/quality-control', icon: Shield },
   { name: '称重商品自动识别', href: '/product-recognition', icon: Scan },
+]
+
+const bottomNavigation = [
+  { name: '消息通知', href: '/notifications', icon: Bell, badge: 3 },
 ]
 
 export default function Sidebar() {
@@ -86,6 +91,47 @@ export default function Sidebar() {
               )} />
               {!collapsed && (
                 <span className="truncate">{item.name}</span>
+              )}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* 底部导航 */}
+      <nav className="p-4 border-t border-gray-200 space-y-2">
+        {bottomNavigation.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors relative",
+                isActive
+                  ? "bg-primary-50 text-primary-700 border-r-2 border-primary-600"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              )}
+              title={collapsed ? item.name : undefined}
+            >
+              <div className="relative">
+                <item.icon className={cn(
+                  "flex-shrink-0",
+                  collapsed ? "w-5 h-5" : "w-5 h-5 mr-3",
+                  isActive ? "text-primary-600" : "text-gray-400"
+                )} />
+                {item.badge && item.badge > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+              {!collapsed && (
+                <span className="truncate">{item.name}</span>
+              )}
+              {!collapsed && item.badge && item.badge > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  {item.badge}
+                </span>
               )}
             </Link>
           )

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Brain, TrendingUp, AlertTriangle, CheckCircle, Download, Calculator } from 'lucide-react'
+import { X, Brain, TrendingUp, AlertTriangle, CheckCircle, Download, Calculator, Send } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
 interface AdjustRow {
@@ -116,6 +116,26 @@ export default function PriceAdjustmentAI({ isOpen, onClose, data, selectedLocat
     setIsGenerating(false)
   }
 
+  // 推送到企业微信
+  const pushToWechat = async () => {
+    // 模拟推送到企业微信
+    const highPriorityRecommendations = recommendations.filter(rec => 
+      rec.riskLevel === 'high' && Math.abs(rec.adjustmentPercent) > 1
+    )
+    
+    if (highPriorityRecommendations.length === 0) {
+      alert('暂无需要紧急调价的产品')
+      return
+    }
+    
+    // 模拟发送过程
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // 这里会调用实际的企业微信推送API
+    // 现在只是模拟推送成功
+    alert(`已成功推送 ${highPriorityRecommendations.length} 条调价建议到企业微信\n\n包含区域：${highPriorityRecommendations.map(r => r.region).join(', ')}`)
+  }
+
   // 导出建议
   const exportRecommendations = () => {
     if (recommendations.length === 0) return
@@ -161,13 +181,22 @@ export default function PriceAdjustmentAI({ isOpen, onClose, data, selectedLocat
           </div>
           <div className="flex items-center space-x-2">
             {recommendations.length > 0 && (
-              <button
-                onClick={exportRecommendations}
-                className="btn-secondary text-sm flex items-center"
-              >
-                <Download className="w-4 h-4 mr-1" />
-                导出建议
-              </button>
+              <>
+                <button
+                  onClick={pushToWechat}
+                  className="btn-primary text-sm flex items-center bg-green-600 hover:bg-green-700"
+                >
+                  <Send className="w-4 h-4 mr-1" />
+                  推送到企业微信
+                </button>
+                <button
+                  onClick={exportRecommendations}
+                  className="btn-secondary text-sm flex items-center"
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  导出建议
+                </button>
+              </>
             )}
             <button
               onClick={onClose}

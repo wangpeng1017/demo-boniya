@@ -29,7 +29,7 @@ import ProductPriceView from '@/components/competitor-analysis/ProductPriceView'
 import MeasureAdjustView from '@/components/competitor-analysis/MeasureAdjustView'
 
 export default function CompetitorAnalysisPage() {
-  const [activeTab, setActiveTab] = useState<'collect' | 'analyze' | 'region' | 'product' | 'measure'>('collect')
+  const [activeTab, setActiveTab] = useState<'collect' | 'region' | 'product' | 'measure'>('collect')
   const [competitorData, setCompetitorData] = useState<CompetitorPrice[]>(mockCompetitorPrices)
   const [ocrResults, setOcrResults] = useState<OCRResult[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
@@ -240,17 +240,6 @@ export default function CompetitorAnalysisPage() {
               数据采集
             </button>
             <button
-              onClick={() => setActiveTab('analyze')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'analyze'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Search className="w-4 h-4 inline mr-2" />
-              数据分析
-            </button>
-            <button
               onClick={() => setActiveTab('region')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'region'
@@ -414,185 +403,6 @@ export default function CompetitorAnalysisPage() {
             </div>
           )}
 
-          {activeTab === 'analyze' && (
-            <div className="space-y-6">
-              {/* 筛选器 */}
-              <div className="flex items-center space-x-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">地点</label>
-                  <select
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    {locations.map(location => (
-                      <option key={location} value={location}>{location}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">品牌</label>
-                  <select
-                    value={selectedBrand}
-                    onChange={(e) => setSelectedBrand(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    {brands.map(brand => (
-                      <option key={brand} value={brand}>{brand}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* 工具栏 */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">数据管理</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setAiReportOpen(true)}
-                      className="btn-primary text-sm flex items-center bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                    >
-                      <BarChart3 className="w-4 h-4 mr-1" />
-                      生成AI分析报告
-                    </button>
-                    <button
-                      onClick={() => {
-                        setImportType('our-products')
-                        setImportModalOpen(true)
-                      }}
-                      className="btn-secondary text-sm flex items-center"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      导入本品价格
-                    </button>
-                    <button
-                      onClick={() => {
-                        setImportType('competitor-products')
-                        setImportModalOpen(true)
-                      }}
-                      className="btn-secondary text-sm flex items-center"
-                    >
-                      <FileSpreadsheet className="w-4 h-4 mr-1" />
-                      导入竞品价格
-                    </button>
-                    <button
-                      onClick={handleExportData}
-                      className="btn-secondary text-sm flex items-center"
-                    >
-                      <Download className="w-4 h-4 mr-1" />
-                      导出表格
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* 价格趋势分析图表 */}
-              <PriceTrendChart
-                selectedProduct={selectedBrand || '全部品牌'}
-                selectedLocation={selectedLocation}
-                competitorData={filteredData}
-              />
-
-              {/* 价格对比表格 */}
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">价格对比分析</h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          地点
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          品牌
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          商品名称
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          规格
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          竞品价格
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          本品价格
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          价格差异
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          上传人
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          编辑时间
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          操作
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredData.map((item) => {
-                        const comparison = getPriceComparison(item.price, '火腿')
-                        return (
-                          <tr key={item.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {item.location}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {item.brand}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {item.productName}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {item.specifications}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {formatCurrency(item.price)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatCurrency(comparison.ourPrice)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                comparison.isHigher
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-green-100 text-green-800'
-                              }`}>
-                                {comparison.isHigher ? '↑' : '↓'} {Math.abs(comparison.percentage)}%
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {item.uploadedBy || '未知'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {item.editedAt ? formatDateTime(item.editedAt) : formatDateTime(item.captureDate)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center">
-                              <button
-                                onClick={() => handleEditData(item)}
-                                className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center mx-auto"
-                              >
-                                <Edit className="w-4 h-4 mr-1" />
-                                编辑
-                              </button>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
 
           {activeTab === 'region' && (
             <div>
