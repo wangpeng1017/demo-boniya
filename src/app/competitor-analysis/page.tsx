@@ -258,6 +258,12 @@ export default function CompetitorAnalysisPage() {
             >
               产品价格分析
             </a>
+            <a
+              href="/competitor-analysis/measure-adjust"
+              className="py-4 px-1 text-sm text-gray-500 hover:text-gray-700"
+            >
+              计量价格调整
+            </a>
           </nav>
         </div>
 
