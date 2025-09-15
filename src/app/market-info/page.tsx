@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Database, AlertTriangle, TrendingUp, MessageSquare, Brain, BarChart3 } from 'lucide-react'
 import { generateExtendedCustomerFeedback } from '@/lib/mockData'
 import CustomerReviewsTab from '@/components/market-info/CustomerReviewsTab'
-import ProductSuggestionsModule from '@/components/market-info/ProductSuggestionsModule'
+import ComprehensiveAnalysis from '@/components/market-info/ComprehensiveAnalysis'
 import FeedbackDetailsTab from '@/components/market-info/FeedbackDetailsTab'
 import AIInsightModal from '@/components/market-info/AIInsightModal'
 import { delay } from '@/lib/utils'
@@ -185,7 +185,7 @@ export default function MarketInfoPage() {
       )}
 
       {activeTab === 'suggestions' && (
-        <ProductSuggestionsModule />
+        <ComprehensiveAnalysis feedbackData={feedbackData} />
       )}
 
       {/* AI洞察模态框 */}
