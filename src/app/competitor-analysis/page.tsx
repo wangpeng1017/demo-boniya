@@ -315,109 +315,102 @@ export default function CompetitorAnalysisPage() {
                       onChange={(e) => setSelectedLocation(e.target.value)}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
-                      {locations.filter(loc => loc !== '全部').map(location => (
+                      {locations.map(location => (
                         <option key={location} value={location}>{location}</option>
                       ))}
                     </select>
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <Upload className="w-4 h-4 inline mr-1" />
+                      <Camera className="w-4 h-4 inline mr-1" />
                       上传图片
                     </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
+                    <label className="flex items-center justify-center w-full h-10 border border-dashed border-gray-300 rounded-md cursor-pointer hover:border-primary-500">
+                      <Upload className="w-4 h-4 mr-2 text-gray-400" />
+                      <span className="text-sm text-gray-600">选择图片文件</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
                 </div>
-              </div>
-
-              {/* OCR处理结果 */}
-              {ocrResults.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">OCR识别结果</h3>
-                  {ocrResults.map(result => (
-                    <div key={result.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start space-x-4">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={result.imageUrl}
-                          alt="上传的图片"
-                          className="w-24 h-24 object-cover rounded-md"
-                        />
-                        <div className="flex-1">
-                          {result.status === 'processing' && (
-                            <div className="flex items-center text-blue-600">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                              正在识别中...
+                
+                {isProcessing && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 mr-2"></div>
+                      <span className="text-yellow-800">正在处理OCR识别...</span>
+                    </div>
+                  </div>
+                )}
+                
+                {ocrResults.length > 0 && (
+                  <div className="mt-4 space-y-4">
+                    <h4 className="font-medium text-gray-900">识别结果</h4>
+                    {ocrResults.map(result => (
+                      <div key={result.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-start space-x-4">
+                          <img
+                            src={result.imageUrl}
+                            alt="OCR Image"
+                            className="w-20 h-20 object-cover rounded-md"
+                          />
+                          <div className="flex-1">
+                            <div className="text-sm text-gray-500 mb-2">
+                              状态: {result.status === 'processing' && '处理中...'}
+                              {result.status === 'completed' && '已完成'}
+                              {result.status === 'error' && '处理失败'}
                             </div>
-                          )}
-                          
-                          {result.status === 'completed' && result.extractedData && (
-                            <div className="space-y-2">
-                              <div className="flex items-center text-green-600 mb-2">
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                识别完成
+                            {result.status === 'completed' && result.extractedData && (
+                              <div className="space-y-2">
+                                <div className="text-sm">
+                                  <span className="font-medium">品牌:</span> {result.extractedData.brand}
+                                </div>
+                                <div className="text-sm">
+                                  <span className="font-medium">商品名称:</span> {result.extractedData.productName}
+                                </div>
+                                <div className="text-sm">
+                                  <span className="font-medium">规格:</span> {result.extractedData.specifications}
+                                </div>
+                                <div className="text-sm">
+                                  <span className="font-medium">价格:</span> {formatCurrency(result.extractedData.price)}
+                                </div>
+                                <div className="flex space-x-2 mt-3">
+                                  <button
+                                    onClick={() => {
+                                      const data = {
+                                        ...result.extractedData,
+                                        location: selectedLocation,
+                                        captureDate: new Date().toISOString()
+                                      } as Partial<CompetitorPrice>
+                                      setEditingData(data)
+                                      setEditModalOpen(true)
+                                    }}
+                                    className="btn-secondary text-sm flex items-center"
+                                  >
+                                    <Edit className="w-4 h-4 mr-1" />
+                                    编辑
+                                  </button>
+                                  <button
+                                    onClick={() => confirmOCRResult(result)}
+                                    className="btn-primary text-sm"
+                                  >
+                                    确认并保存
+                                  </button>
+                                </div>
                               </div>
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="font-medium">品牌：</span>
-                                  <span>{result.extractedData.brand}</span>
-                                </div>
-                                <div>
-                                  <span className="font-medium">商品名称：</span>
-                                  <span>{result.extractedData.productName}</span>
-                                </div>
-                                <div>
-                                  <span className="font-medium">规格：</span>
-                                  <span>{result.extractedData.specifications}</span>
-                                </div>
-                                <div>
-                                  <span className="font-medium">价格：</span>
-                                  <span className="text-red-600 font-semibold">
-                                    ¥{result.extractedData.price}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="mt-3 flex space-x-2">
-                                <button
-                                  onClick={() => {
-                                    setEditingData({
-                                      brand: result.extractedData!.brand,
-                                      productName: result.extractedData!.productName,
-                                      specifications: result.extractedData!.specifications,
-                                      price: result.extractedData!.price,
-                                      location: selectedLocation,
-                                      rawText: result.rawText,
-                                      sourceType: 'ocr'
-                                    })
-                                    setEditModalOpen(true)
-                                  }}
-                                  className="btn-secondary text-sm flex items-center"
-                                >
-                                  <Edit className="w-4 h-4 mr-1" />
-                                  编辑
-                                </button>
-                                <button
-                                  onClick={() => confirmOCRResult(result)}
-                                  className="btn-primary text-sm"
-                                >
-                                  确认并保存
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -598,82 +591,82 @@ export default function CompetitorAnalysisPage() {
                   </table>
                 </div>
               </div>
-
-              {activeTab === 'region' && (
-                <div className="mt-4">
-                  <RegionDataView />
-                </div>
-              )}
-
-              {activeTab === 'product' && (
-                <div className="mt-4">
-                  <ProductPriceView />
-                </div>
-              )}
-
-              {activeTab === 'measure' && (
-                <div className="mt-4">
-                  <MeasureAdjustView />
-                </div>
-              )}
             </div>
-          </div>
+          )}
 
-          {/* 数据编辑模态框 */}
-          <DataEditModal
-            isOpen={editModalOpen}
-            onClose={() => {
-              setEditModalOpen(false)
-              setEditingData(null)
-            }}
-            onSave={handleSaveEdit}
-            initialData={editingData || undefined}
-            title={editingData ? "编辑数据" : "添加数据"}
-          />
+          {activeTab === 'region' && (
+            <div>
+              <RegionDataView />
+            </div>
+          )}
 
-          {/* 文件导入模态框 */}
-          <FileImportModal
-            isOpen={importModalOpen}
-            onClose={() => setImportModalOpen(false)}
-            onImport={handleImportData}
-            type={importType}
-            title={importType === 'our-products' ? '导入本品价格' : '导入竞品价格'}
-          />
+          {activeTab === 'product' && (
+            <div>
+              <ProductPriceView />
+            </div>
+          )}
 
-          {/* AI分析报告模态框 */}
-          <AIAnalysisReport
-            isOpen={aiReportOpen}
-            onClose={() => setAiReportOpen(false)}
-            data={competitorData}
-            selectedLocation={selectedLocation}
-            selectedBrand={selectedBrand}
-          />
-
-          {/* 通知组件 */}
-          {notification && (
-            <div className="fixed top-4 right-4 z-50">
-              <div className={`rounded-lg p-4 shadow-lg ${
-                notification.type === 'success'
-                  ? 'bg-green-50 border border-green-200'
-                  : 'bg-red-50 border border-red-200'
-              }`}>
-                <div className="flex items-center">
-                  {notification.type === 'success' ? (
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-                  )}
-                  <span className={`text-sm font-medium ${
-                    notification.type === 'success' ? 'text-green-800' : 'text-red-800'
-                  }`}>
-                    {notification.message}
-                  </span>
-                </div>
-              </div>
+          {activeTab === 'measure' && (
+            <div>
+              <MeasureAdjustView />
             </div>
           )}
         </div>
       </div>
+
+      {/* 数据编辑模态框 */}
+      <DataEditModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false)
+          setEditingData(null)
+        }}
+        onSave={handleSaveEdit}
+        initialData={editingData || undefined}
+        title={editingData ? "编辑数据" : "添加数据"}
+      />
+
+      {/* 文件导入模态框 */}
+      <FileImportModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={handleImportData}
+        type={importType}
+        title={importType === 'our-products' ? '导入本品价格' : '导入竞品价格'}
+      />
+
+      {/* AI分析报告模态框 */}
+      <AIAnalysisReport
+        isOpen={aiReportOpen}
+        onClose={() => setAiReportOpen(false)}
+        data={competitorData}
+        selectedLocation={selectedLocation}
+        selectedBrand={selectedBrand}
+      />
+
+      {/* 通知组件 */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`rounded-lg p-4 shadow-lg ${
+            notification.type === 'success'
+              ? 'bg-green-50 border border-green-200'
+              : 'bg-red-50 border border-red-200'
+          }`}>
+            <div className="flex items-center">
+              {notification.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+              )}
+              <span className={`text-sm font-medium ${
+                notification.type === 'success' ? 'text-green-800' : 'text-red-800'
+              }`}>
+                {notification.message}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

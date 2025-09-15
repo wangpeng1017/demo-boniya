@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Send, Ruler, MapPin } from 'lucide-react'
+import { Send, Ruler, MapPin, Brain, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react'
+import AIAnalysisReport from '@/components/competitor-analysis/AIAnalysisReport'
 
 interface AdjustRow {
   id: number
@@ -34,6 +35,8 @@ const baseRows: AdjustRow[] = [
 export default function MeasureAdjustPage() {
   const [rows, setRows] = useState<AdjustRow[]>(baseRows)
   const [regionFilter, setRegionFilter] = useState<string>('全部')
+  const [aiReportOpen, setAiReportOpen] = useState(false)
+  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null)
 
   const regions = Array.from(new Set(rows.map(r => r.region)))
 
@@ -46,9 +49,33 @@ export default function MeasureAdjustPage() {
     setRows(prev => prev.map(r => r.id === id ? { ...r, adjustTo: isNaN(n as any) ? undefined : n } : r))
   }
 
+  // 显示通知
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message })
+    setTimeout(() => setNotification(null), 3000)
+  }
+
   const handlePushToBPM = () => {
     // 模拟推送
-    alert('已将调价方案推送至BPM，待审批。\n条目数：' + filtered.filter(r => r.adjustTo).length)
+    const adjustCount = filtered.filter(r => r.adjustTo).length
+    showNotification('success', `已将${adjustCount}条调价方案推送至BPM，待审批`)
+  }
+
+  // 为AI分析创建模拟数据
+  const createMockCompetitorData = () => {
+    return filtered.map(row => ({
+      id: `mock-${row.id}`,
+      captureDate: new Date().toISOString(),
+      location: row.region,
+      brand: '喜旺',
+      productName: row.rivalName,
+      specifications: '1kg',
+      price: row.rivalPricePerKg,
+      rawText: `${row.rivalName} ${row.rivalPricePerKg}元/kg`,
+      sourceType: 'manual' as const,
+      uploadedBy: '系统',
+      editedAt: new Date().toISOString()
+    }))
   }
 
   return (
@@ -61,9 +88,14 @@ export default function MeasureAdjustPage() {
           </h1>
           <p className="text-gray-600 mt-1">按区域对比竞品，填写“调价到价格（元/kg）”，右上角推送审批。</p>
         </div>
-        <button onClick={handlePushToBPM} disabled={!canPush} className={`px-4 py-2 rounded-md flex items-center ${canPush? 'bg-primary-600 text-white hover:bg-primary-700':'bg-gray-300 text-gray-600 cursor-not-allowed'}`}>
-          <Send className="w-4 h-4 mr-2"/> 推送至BPM
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setAiReportOpen(true)} className="px-4 py-2 rounded-md flex items-center bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700">
+            <Brain className="w-4 h-4 mr-2"/> AI调价建议
+          </button>
+          <button onClick={handlePushToBPM} disabled={!canPush} className={`px-4 py-2 rounded-md flex items-center ${canPush? 'bg-primary-600 text-white hover:bg-primary-700':'bg-gray-300 text-gray-600 cursor-not-allowed'}`}>
+            <Send className="w-4 h-4 mr-2"/> 推送至BPM
+          </button>
+        </div>
       </div>
 
       {/* 过滤 */}
@@ -114,7 +146,33 @@ export default function MeasureAdjustPage() {
           </tbody>
         </table>
       </div>
+
+      {/* AI分析报告模态框 */}
+      <AIAnalysisReport
+        isOpen={aiReportOpen}
+        onClose={() => setAiReportOpen(false)}
+        data={createMockCompetitorData()}
+        selectedLocation={regionFilter}
+        selectedBrand={'全部'}
+      />
+
+      {/* 通知组件 */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`${notification.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'} rounded-lg p-4 shadow-lg`}>
+            <div className="flex items-center">
+              {notification.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+              )}
+              <span className={`${notification.type === 'success' ? 'text-green-800' : 'text-red-800'} text-sm font-medium`}>
+                {notification.message}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-
