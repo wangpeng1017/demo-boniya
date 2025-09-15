@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Table as ReactTable } from 'react-table'
 import { MapPin, List, Ruler, PackageOpen } from 'lucide-react'
 
 interface MeterPriceRow {
