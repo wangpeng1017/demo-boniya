@@ -28,7 +28,14 @@ export default function ComprehensiveAnalysis({ feedbackData, reviewsData = [] }
 
   // 数据分析
   const analysisData = useMemo(() => {
-    // 线下反馈类型统计
+    // 常用电商平台关键字
+    const ecommerceKeywords = ['天猫','京东','淘宝','拼多多','抖音','抖音商城','小红书','快手','美团','饿了么','电商']
+    const isEcommerce = (p?: string) => {
+      const v = (p || '').toLowerCase()
+      return ecommerceKeywords.some(k => v.includes(k.toLowerCase()))
+    }
+
+    // 线下反馈类型统计（基于 AI 标签）
     const feedbackTypes = feedbackData.reduce((acc, item) => {
       item.aiTags?.forEach(tag => {
         acc[tag] = (acc[tag] || 0) + 1
@@ -38,7 +45,7 @@ export default function ComprehensiveAnalysis({ feedbackData, reviewsData = [] }
 
     // 电商评论情感统计
     const sentimentStats = feedbackData.reduce((acc, item) => {
-      if (item.source?.includes('电商')) {
+      if (isEcommerce(item.platform)) {
         acc[item.sentiment] = (acc[item.sentiment] || 0) + 1
       }
       return acc
@@ -52,9 +59,9 @@ export default function ComprehensiveAnalysis({ feedbackData, reviewsData = [] }
       return date >= thirtyDaysAgo
     })
 
-    // 按来源统计
+    // 按来源统计（线下 vs 平台）
     const sourceStats = feedbackData.reduce((acc, item) => {
-      const source = item.source || '未知'
+      const source = item.submitLocation ? '线下反馈' : (item.platform || '未知')
       acc[source] = (acc[source] || 0) + 1
       return acc
     }, {} as Record<string, number>)
@@ -91,14 +98,20 @@ export default function ComprehensiveAnalysis({ feedbackData, reviewsData = [] }
       })
       
       analysisText += `\n【洞察与建议】\n`
-      analysisText += `1. ${sortedTypes[0][0]}是目前最受关注的问题，建议优先改进\n`
+      const topType = sortedTypes[0]?.[0] || '重点问题'
+      analysisText += `1. ${topType}是目前最受关注的问题，建议优先改进\n`
       analysisText += `2. 建立常态化反馈收集机制，持续跟踪改进效果\n`
       analysisText += `3. 针对高频问题制定专项改进计划`
       
     } else if (prompt.includes('好评最多')) {
       // 分析电商好评
+      const ecommerceKeywords = ['天猫','京东','淘宝','拼多多','抖音','抖音商城','小红书','快手','美团','饿了么','电商']
+      const isEcommerce = (p?: string) => {
+        const v = (p || '').toLowerCase()
+        return ecommerceKeywords.some(k => v.includes(k.toLowerCase()))
+      }
       const positiveReviews = feedbackData.filter(item => 
-        item.source?.includes('电商') && item.sentiment === 'positive'
+        isEcommerce(item.platform) && item.sentiment === 'positive'
       )
       
       analysisText = `【近一个月电商好评分析】\n\n`
@@ -106,7 +119,7 @@ export default function ComprehensiveAnalysis({ feedbackData, reviewsData = [] }
       
       // 按产品分类
       const productStats = positiveReviews.reduce((acc, item) => {
-        const product = item.topic || '其他产品'
+        const product = item.productName || '其他产品'
         acc[product] = (acc[product] || 0) + 1
         return acc
       }, {} as Record<string, number>)
@@ -121,7 +134,8 @@ export default function ComprehensiveAnalysis({ feedbackData, reviewsData = [] }
       })
       
       analysisText += `\n【营销建议】\n`
-      analysisText += `1. 重点推广${sortedProducts[0][0]}，利用好评口碑效应\n`
+      const topProduct = sortedProducts[0]?.[0] || '重点产品'
+      analysisText += `1. 重点推广${topProduct}，利用好评口碑效应\n`
       analysisText += `2. 提取好评关键词用于营销文案\n`
       analysisText += `3. 邀请满意客户参与案例分享和推荐`
       
