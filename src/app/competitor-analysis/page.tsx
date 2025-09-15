@@ -246,6 +246,18 @@ export default function CompetitorAnalysisPage() {
               <Search className="w-4 h-4 inline mr-2" />
               数据分析
             </button>
+            <a
+              href="/competitor-analysis/region-data"
+              className="py-4 px-1 text-sm text-gray-500 hover:text-gray-700"
+            >
+              区域竞品数据
+            </a>
+            <a
+              href="/competitor-analysis/product-price"
+              className="py-4 px-1 text-sm text-gray-500 hover:text-gray-700"
+            >
+              产品价格分析
+            </a>
           </nav>
         </div>
 
