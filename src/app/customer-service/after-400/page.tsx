@@ -12,6 +12,7 @@ interface RecordingItem {
   url?: string
   transcript?: string
   aiSummary?: string
+  uploadTime: Date
 }
 
 const SAMPLE_TRANSCRIPT = `客服: 孙女士。
@@ -77,21 +78,32 @@ const SAMPLE_SUMMARY = `客户情绪
 
 export default function After400Page() {
   const [list, setList] = useState<RecordingItem[]>([
-    { id: 'r1', fileName: '163637.mp3', size: '1.4M', source: '微信电脑版', transcript: SAMPLE_TRANSCRIPT, aiSummary: SAMPLE_SUMMARY },
-    { id: 'r2', fileName: '162806.mp3', size: '1.2M', source: '微信电脑版' },
-    { id: 'r3', fileName: '165609.mp3', size: '1.1M', source: '微信电脑版' },
-    { id: 'r4', fileName: '163110.mp3', size: '363K', source: '微信电脑版' },
+    { id: 'r1', fileName: '163637.mp3', size: '1.4M', source: '微信电脑版', transcript: SAMPLE_TRANSCRIPT, aiSummary: SAMPLE_SUMMARY, uploadTime: new Date(Date.now() - 2 * 3600000) },
+    { id: 'r2', fileName: '162806.mp3', size: '1.2M', source: '微信电脑版', uploadTime: new Date(Date.now() - 5 * 3600000) },
+    { id: 'r3', fileName: '165609.mp3', size: '1.1M', source: '微信电脑版', uploadTime: new Date(Date.now() - 24 * 3600000) },
+    { id: 'r4', fileName: '163110.mp3', size: '363K', source: '微信电脑版', uploadTime: new Date(Date.now() - 48 * 3600000) },
   ])
   const [selected, setSelected] = useState<RecordingItem | null>(list[0])
   const [playing, setPlaying] = useState(false)
   const [showFull, setShowFull] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // 按上传时间排序，最新的在前
+  const sortedList = useMemo(() => {
+    return [...list].sort((a, b) => b.uploadTime.getTime() - a.uploadTime.getTime())
+  }, [list])
 
   const onFiles = async (files: FileList) => {
     const arr: RecordingItem[] = []
     for (let i = 0; i < files.length; i++) {
       const f = files[i]
-      arr.push({ id: `up-${Date.now()}-${i}`, fileName: f.name, size: `${Math.round(f.size/1024)}K`, source: '本地上传' })
+      arr.push({ 
+        id: `up-${Date.now()}-${i}`, 
+        fileName: f.name, 
+        size: `${Math.round(f.size/1024)}K`, 
+        source: '本地上传',
+        uploadTime: new Date()
+      })
     }
     await delay(200)
     setList(prev => [...arr, ...prev])
@@ -113,14 +125,17 @@ export default function After400Page() {
             </div>
           </div>
           <div className="space-y-2 max-h-[70vh] overflow-auto">
-            {list.map(item => (
+            {sortedList.map(item => (
               <button key={item.id} onClick={()=>{ setSelected(item); setShowFull(false); }}
                       className={`w-full text-left p-3 border rounded-md hover:bg-gray-50 ${selected?.id===item.id?'border-primary-300 bg-primary-50':''}`}>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-1">
                   <div className="font-medium text-gray-900">{item.fileName}</div>
                   <div className="text-xs text-gray-500">{item.size}</div>
                 </div>
-                <div className="text-xs text-gray-500">{item.source || ''}</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-gray-500">{item.source || ''}</div>
+                  <div className="text-xs text-gray-400">{formatDateTime(item.uploadTime)}</div>
+                </div>
               </button>
             ))}
           </div>
