@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, AlertTriangle, CheckCircle, Clock, Smartphone, TrendingUp, MapPin, Calendar, Eye, MoreVertical, ChevronLeft, Search, Filter } from 'lucide-react'
+import { Bell, AlertTriangle, CheckCircle, Clock, Smartphone, TrendingUp, MapPin, Calendar, Eye, MoreVertical, ChevronLeft, Search, Filter, AlertCircle } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 
 interface Notification {
