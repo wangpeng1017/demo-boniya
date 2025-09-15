@@ -70,7 +70,7 @@ import EcommerceView from '@/components/customer-service/EcommerceView'
 import OverviewView from '@/components/customer-service/OverviewView'
 
 export default function CustomerServicePage() {
-  const [subTab, setSubTab] = useState<'dashboard'|'after400'|'ecommerce'|'overview'>('dashboard')
+  const [subTab, setSubTab] = useState<'after400'|'ecommerce'|'overview'>('after400')
   const [tickets, setTickets] = useState<CustomerTicket[]>(mockTickets)
   const [selectedStatus, setSelectedStatus] = useState('全部')
   const [selectedPriority, setSelectedPriority] = useState('全部')
@@ -188,238 +188,17 @@ export default function CustomerServicePage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 flex items-center">
           <MessageSquare className="w-6 h-6 mr-2 text-primary-600" />
-          智能客服管理
+          售后服务管理
         </h1>
-        <p className="text-gray-600 mt-1">统一客服工单管理与智能分析系统</p>
+        <p className="text-gray-600 mt-1">售后服务数据分析与智能处理系统</p>
         {/* 子菜单切换（同页内Tab） */}
         <div className="mt-3 flex items-center space-x-6 text-sm">
-          <button onClick={() => setSubTab('dashboard')} className={`pb-1 border-b-2 ${subTab==='dashboard'?'border-primary-500 text-primary-600':'border-transparent text-gray-600 hover:text-gray-900'}`}>总览</button>
           <button onClick={() => setSubTab('after400')} className={`pb-1 border-b-2 ${subTab==='after400'?'border-primary-500 text-primary-600':'border-transparent text-gray-600 hover:text-gray-900'}`}>400售后分析</button>
           <button onClick={() => setSubTab('ecommerce')} className={`pb-1 border-b-2 ${subTab==='ecommerce'?'border-primary-500 text-primary-600':'border-transparent text-gray-600 hover:text-gray-900'}`}>电商平台售后分析</button>
           <button onClick={() => setSubTab('overview')} className={`pb-1 border-b-2 ${subTab==='overview'?'border-primary-500 text-primary-600':'border-transparent text-gray-600 hover:text-gray-900'}`}>综合数据分析</button>
         </div>
       </div>
 
-      {subTab==='dashboard' && (
-      <>
-      {/* 数据概览 */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">总工单数</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-            <MessageSquare className="w-8 h-8 text-blue-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">待处理</p>
-              <p className="text-2xl font-bold text-red-600">{stats.open}</p>
-            </div>
-            <AlertTriangle className="w-8 h-8 text-red-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">处理中</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.inProgress}</p>
-            </div>
-            <Clock className="w-8 h-8 text-yellow-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">已解决</p>
-              <p className="text-2xl font-bold text-green-600">{stats.resolved}</p>
-            </div>
-            <CheckCircle className="w-8 h-8 text-green-600" />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">紧急工单</p>
-              <p className="text-2xl font-bold text-red-600">{stats.urgent}</p>
-            </div>
-            <AlertTriangle className="w-8 h-8 text-red-600" />
-          </div>
-        </div>
-      </div>
-
-      {/* 图表分析 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">工单状态分布</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={statusData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">渠道分布</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={channelData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* 筛选器 */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">工单筛选</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">状态</label>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {statusOptions.map(status => (
-                <option key={status} value={status}>
-                  {status === '全部' ? '全部' : getStatusText(status)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">优先级</label>
-            <select
-              value={selectedPriority}
-              onChange={(e) => setSelectedPriority(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {priorityOptions.map(priority => (
-                <option key={priority} value={priority}>
-                  {priority === '全部' ? '全部' : getPriorityText(priority)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">渠道</label>
-            <select
-              value={selectedChannel}
-              onChange={(e) => setSelectedChannel(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {channelOptions.map(channel => (
-                <option key={channel} value={channel}>{channel}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* 工单列表 */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">工单列表</h3>
-          <p className="text-sm text-gray-600">共 {filteredTickets.length} 个工单</p>
-        </div>
-        <div className="divide-y divide-gray-200">
-          {filteredTickets.map((ticket) => (
-            <div key={ticket.id} className="p-6 hover:bg-gray-50">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="font-medium text-gray-900">#{ticket.id}</span>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusStyle(ticket.status)}`}>
-                      {getStatusText(ticket.status)}
-                    </span>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityStyle(ticket.priority)}`}>
-                      {getPriorityText(ticket.priority)}
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {ticket.channel}
-                    </span>
-                  </div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-1">{ticket.subject}</h4>
-                  <p className="text-gray-600 mb-2">{ticket.description}</p>
-                  
-                  {/* 语音转录功能 */}
-                  {ticket.audioUrl && (
-                    <div className="bg-blue-50 rounded-md p-3 mb-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-blue-900">📞 通话录音</span>
-                        <button
-                          onClick={() => transcribeAudio(ticket.id)}
-                          disabled={isTranscribing === ticket.id}
-                          className="text-sm text-blue-600 hover:text-blue-700 flex items-center"
-                        >
-                          <Play className="w-4 h-4 mr-1" />
-                          {isTranscribing === ticket.id ? '转录中...' : '语音转文字'}
-                        </button>
-                      </div>
-                      {isTranscribing === ticket.id && (
-                        <div className="flex items-center text-blue-600">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                          AI正在转录语音内容...
-                        </div>
-                      )}
-                      {ticket.transcription && (
-                        <div className="mt-2 p-2 bg-white rounded border">
-                          <p className="text-sm text-gray-700">
-                            <strong>转录内容：</strong>{ticket.transcription}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center text-sm text-gray-500 space-x-4">
-                    <span className="flex items-center">
-                      <User className="w-4 h-4 mr-1" />
-                      {ticket.customerName}
-                    </span>
-                    <span>创建时间：{formatDateTime(ticket.createdAt)}</span>
-                    {ticket.assignedTo && (
-                      <span>负责人：{ticket.assignedTo}</span>
-                    )}
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <button className="btn-primary text-sm">
-                    处理工单
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      </>
-      )}
 
       {subTab==='after400' && (
         <div className="mt-4">

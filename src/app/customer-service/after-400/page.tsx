@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react'
-import { Upload, Headphones, Play, Pause, FilePlus2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Upload, Headphones, Play, Pause, FilePlus2, ChevronDown, ChevronUp, User, AlertCircle, Target, DollarSign, CheckCircle } from 'lucide-react'
 import { delay, formatDateTime } from '@/lib/utils'
 
 interface RecordingItem {
@@ -76,6 +76,128 @@ const SAMPLE_SUMMARY = `客户情绪
 客服建议客户直接联系该业务员，说明自己的具体需求（清晨提货、批发价格等），由业务员进行协调和安排。
 客户接受了这个解决方案，并对客服表示感谢，通话在友好氛围中结束。`
 
+// AI总结展示组件
+function AISummaryDisplay({ summary }: { summary: string }) {
+  // 解析AI总结内容
+  const sections = summary.split('\n').reduce((acc, line) => {
+    if (line.includes('客户情绪')) {
+      acc.currentSection = '客户情绪'
+      acc.sections[acc.currentSection] = []
+    } else if (line.includes('关键点')) {
+      acc.currentSection = '关键点'
+      acc.sections[acc.currentSection] = []
+    } else if (line.includes('客户身份与需求：')) {
+      acc.currentSubSection = '客户身份与需求'
+    } else if (line.includes('核心问题：')) {
+      acc.currentSubSection = '核心问题'
+    } else if (line.includes('价格诉求：')) {
+      acc.currentSubSection = '价格诉求'
+    } else if (line.includes('解决方案与结果：')) {
+      acc.currentSubSection = '解决方案与结果'
+    } else if (line.trim() && acc.currentSection) {
+      if (!acc.sections[acc.currentSection]) acc.sections[acc.currentSection] = []
+      acc.sections[acc.currentSection].push({ subSection: acc.currentSubSection, content: line.trim() })
+    }
+    return acc
+  }, { sections: {}, currentSection: '', currentSubSection: '' } as any)
+
+  return (
+    <div className="space-y-4">
+      {/* 客户情绪 */}
+      {sections.sections['客户情绪'] && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="text-base font-semibold text-blue-900 mb-2 flex items-center">
+            <AlertCircle className="w-5 h-5 mr-2" />
+            客户情绪
+          </h4>
+          <p className="text-sm text-gray-700">
+            {sections.sections['客户情绪'].map((item: any) => item.content).join(' ')}
+          </p>
+        </div>
+      )}
+
+      {/* 关键点 */}
+      {sections.sections['关键点'] && (
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h4 className="text-base font-semibold text-gray-900 mb-3 flex items-center">
+            <Target className="w-5 h-5 mr-2" />
+            关键点
+          </h4>
+          <div className="space-y-3">
+            {/* 客户身份与需求 */}
+            {sections.sections['关键点'].filter((item: any) => item.subSection === '客户身份与需求').length > 0 && (
+              <div className="pl-4 border-l-2 border-primary-300">
+                <h5 className="text-sm font-semibold text-gray-800 mb-1 flex items-center">
+                  <User className="w-4 h-4 mr-1" />
+                  客户身份与需求
+                </h5>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {sections.sections['关键点']
+                    .filter((item: any) => item.subSection === '客户身份与需求')
+                    .map((item: any, idx: number) => (
+                      <li key={idx} className="pl-4">• {item.content}</li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            {/* 核心问题 */}
+            {sections.sections['关键点'].filter((item: any) => item.subSection === '核心问题').length > 0 && (
+              <div className="pl-4 border-l-2 border-yellow-300">
+                <h5 className="text-sm font-semibold text-gray-800 mb-1 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1 text-yellow-600" />
+                  核心问题
+                </h5>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {sections.sections['关键点']
+                    .filter((item: any) => item.subSection === '核心问题')
+                    .map((item: any, idx: number) => (
+                      <li key={idx} className="pl-4">• {item.content}</li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            {/* 价格诉求 */}
+            {sections.sections['关键点'].filter((item: any) => item.subSection === '价格诉求').length > 0 && (
+              <div className="pl-4 border-l-2 border-green-300">
+                <h5 className="text-sm font-semibold text-gray-800 mb-1 flex items-center">
+                  <DollarSign className="w-4 h-4 mr-1 text-green-600" />
+                  价格诉求
+                </h5>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {sections.sections['关键点']
+                    .filter((item: any) => item.subSection === '价格诉求')
+                    .map((item: any, idx: number) => (
+                      <li key={idx} className="pl-4">• {item.content}</li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            {/* 解决方案与结果 */}
+            {sections.sections['关键点'].filter((item: any) => item.subSection === '解决方案与结果').length > 0 && (
+              <div className="pl-4 border-l-2 border-blue-300">
+                <h5 className="text-sm font-semibold text-gray-800 mb-1 flex items-center">
+                  <CheckCircle className="w-4 h-4 mr-1 text-blue-600" />
+                  解决方案与结果
+                </h5>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {sections.sections['关键点']
+                    .filter((item: any) => item.subSection === '解决方案与结果')
+                    .map((item: any, idx: number) => (
+                      <li key={idx} className="pl-4">• {item.content}</li>
+                    ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function After400Page() {
   const [list, setList] = useState<RecordingItem[]>([
     { id: 'r1', fileName: '163637.mp3', size: '1.4M', source: '微信电脑版', transcript: SAMPLE_TRANSCRIPT, aiSummary: SAMPLE_SUMMARY, uploadTime: new Date(Date.now() - 2 * 3600000) },
@@ -110,21 +232,26 @@ export default function After400Page() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4 flex items-center"><Headphones className="w-6 h-6 mr-2 text-primary-600"/>400售后分析</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+          <Headphones className="w-6 h-6 mr-2 text-primary-600" />
+          400售后分析
+        </h1>
+        <p className="text-gray-600 mt-1">400客服录音分析与智能转写</p>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 左侧列表 */}
-        <div className="lg:col-span-1 bg-white border rounded-lg p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm text-gray-600">录音列表</div>
-            <div>
-              <button onClick={()=>fileInputRef.current?.click()} className="text-sm flex items-center px-2 py-1 border rounded-md hover:bg-gray-50">
-                <Upload className="w-4 h-4 mr-1"/> 批量上传
-              </button>
-              <input ref={fileInputRef} type="file" accept="audio/*" multiple className="hidden" onChange={(e)=> e.target.files && onFiles(e.target.files)} />
-            </div>
+        <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">录音列表</h3>
+            <button onClick={()=>fileInputRef.current?.click()} className="text-sm flex items-center px-3 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+              <Upload className="w-4 h-4 mr-1"/> 批量上传
+            </button>
+            <input ref={fileInputRef} type="file" accept="audio/*" multiple className="hidden" onChange={(e)=> e.target.files && onFiles(e.target.files)} />
           </div>
-          <div className="space-y-2 max-h-[70vh] overflow-auto">
+          <div className="p-4 space-y-2 max-h-[70vh] overflow-auto">
             {sortedList.map(item => (
               <button key={item.id} onClick={()=>{ setSelected(item); setShowFull(false); }}
                       className={`w-full text-left p-3 border rounded-md hover:bg-gray-50 ${selected?.id===item.id?'border-primary-300 bg-primary-50':''}`}>
@@ -142,29 +269,29 @@ export default function After400Page() {
         </div>
 
         {/* 右侧详情 */}
-        <div className="lg:col-span-2 bg-white border rounded-lg p-4">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
           {!selected ? (
-            <div className="text-gray-500">请选择左侧录音查看详情</div>
+            <div className="p-6 text-gray-500 text-center">请选择左侧录音查看详情</div>
           ) : (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="p-6">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
                 <div>
                   <div className="font-semibold text-gray-900">{selected.fileName}</div>
-                  <div className="text-xs text-gray-500">大小 {selected.size} · 来源 {selected.source || '—'} · {formatDateTime(new Date())}</div>
+                  <div className="text-xs text-gray-500">大小 {selected.size} · 来源 {selected.source || '—'} · {formatDateTime(selected.uploadTime)}</div>
                 </div>
-                <button onClick={()=>setPlaying(p=>!p)} className="px-3 py-1 border rounded-md text-sm flex items-center">
+                <button onClick={()=>setPlaying(p=>!p)} className="px-4 py-2 bg-primary-600 text-white rounded-md text-sm flex items-center hover:bg-primary-700">
                   {playing ? (<><Pause className="w-4 h-4 mr-1"/>暂停</>) : (<><Play className="w-4 h-4 mr-1"/>播放</>)}
                 </button>
               </div>
 
               {/* 录音原文（折叠） */}
-              <div>
-                <div className="text-sm font-medium text-gray-900 mb-1">录音原文</div>
-                <div className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 border rounded-md p-3">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">录音原文</h3>
+                <div className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 border border-gray-200 rounded-md p-4">
                   {showFull ? (selected.transcript || '暂无转写') : (selected.transcript ? selected.transcript.slice(0, 200) + (selected.transcript.length>200?'...':'') : '暂无转写')}
                 </div>
                 {selected.transcript && selected.transcript.length > 200 && (
-                  <button onClick={()=>setShowFull(s=>!s)} className="mt-1 text-blue-600 text-sm flex items-center">
+                  <button onClick={()=>setShowFull(s=>!s)} className="mt-2 text-primary-600 text-sm flex items-center hover:text-primary-700">
                     {showFull ? (<><ChevronUp className="w-4 h-4 mr-1"/>收起</>) : (<><ChevronDown className="w-4 h-4 mr-1"/>查看更多</>)}
                   </button>
                 )}
@@ -172,10 +299,14 @@ export default function After400Page() {
 
               {/* AI总结 */}
               <div>
-                <div className="text-sm font-medium text-gray-900 mb-1">AI总结</div>
-                <div className="text-sm text-gray-800 whitespace-pre-wrap bg-blue-50 border border-blue-200 rounded-md p-3">
-                  {selected.aiSummary || '点击“语音转文字/分析”后将展示AI总结'}
-                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">AI总结</h3>
+                {selected.aiSummary ? (
+                  <AISummaryDisplay summary={selected.aiSummary} />
+                ) : (
+                  <div className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-md p-4">
+                    点击"语音转文字/分析"后将展示AI总结
+                  </div>
+                )}
               </div>
             </div>
           )}
