@@ -252,6 +252,17 @@ export default function CompetitorAnalysisPage() {
         <div className="p-6">
           {activeTab === 'collect' && (
             <div className="space-y-6">
+              {/* 快捷入口到两个移动端页面 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="/competitor-analysis/capture" className="block p-4 border rounded-lg hover:shadow">
+                  <div className="text-sm text-gray-600">拍照识别（移动端）</div>
+                  <div className="text-xs text-gray-500">上传一张图片，识别并可编辑上传，支持历史记录</div>
+                </a>
+                <a href="/competitor-analysis/voice" className="block p-4 border rounded-lg hover:shadow">
+                  <div className="text-sm text-gray-600">语音识别（移动端）</div>
+                  <div className="text-xs text-gray-500">语音输入自动结构化，可编辑上传，支持历史记录</div>
+                </a>
+              </div>
               {/* 移动端优化的数据采集界面 */}
               <div className="bg-blue-50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">📱 移动端数据采集</h3>
