@@ -596,85 +596,84 @@ export default function CompetitorAnalysisPage() {
                       })}
                     </tbody>
                   </table>
-        </div>
+                </div>
+              </div>
 
-          {activeTab === 'region' && (
-            <div className="mt-4">
-              <RegionDataView />
-            </div>
-          )}
-
-          {activeTab === 'product' && (
-            <div className="mt-4">
-              <ProductPriceView />
-            </div>
-          )}
-
-          {activeTab === 'measure' && (
-            <div className="mt-4">
-              <MeasureAdjustView />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-      </div>
-
-      {/* 数据编辑模态框 */}
-      <DataEditModal
-        isOpen={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false)
-          setEditingData(null)
-        }}
-        onSave={handleSaveEdit}
-        initialData={editingData || undefined}
-        title={editingData ? "编辑数据" : "添加数据"}
-      />
-
-      {/* 文件导入模态框 */}
-      <FileImportModal
-        isOpen={importModalOpen}
-        onClose={() => setImportModalOpen(false)}
-        onImport={handleImportData}
-        type={importType}
-        title={importType === 'our-products' ? '导入本品价格' : '导入竞品价格'}
-      />
-
-      {/* AI分析报告模态框 */}
-      <AIAnalysisReport
-        isOpen={aiReportOpen}
-        onClose={() => setAiReportOpen(false)}
-        data={competitorData}
-        selectedLocation={selectedLocation}
-        selectedBrand={selectedBrand}
-      />
-
-      {/* 通知组件 */}
-      {notification && (
-        <div className="fixed top-4 right-4 z-50">
-          <div className={`rounded-lg p-4 shadow-lg ${
-            notification.type === 'success'
-              ? 'bg-green-50 border border-green-200'
-              : 'bg-red-50 border border-red-200'
-          }`}>
-            <div className="flex items-center">
-              {notification.type === 'success' ? (
-                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+              {activeTab === 'region' && (
+                <div className="mt-4">
+                  <RegionDataView />
+                </div>
               )}
-              <span className={`text-sm font-medium ${
-                notification.type === 'success' ? 'text-green-800' : 'text-red-800'
-              }`}>
-                {notification.message}
-              </span>
+
+              {activeTab === 'product' && (
+                <div className="mt-4">
+                  <ProductPriceView />
+                </div>
+              )}
+
+              {activeTab === 'measure' && (
+                <div className="mt-4">
+                  <MeasureAdjustView />
+                </div>
+              )}
             </div>
           </div>
+
+          {/* 数据编辑模态框 */}
+          <DataEditModal
+            isOpen={editModalOpen}
+            onClose={() => {
+              setEditModalOpen(false)
+              setEditingData(null)
+            }}
+            onSave={handleSaveEdit}
+            initialData={editingData || undefined}
+            title={editingData ? "编辑数据" : "添加数据"}
+          />
+
+          {/* 文件导入模态框 */}
+          <FileImportModal
+            isOpen={importModalOpen}
+            onClose={() => setImportModalOpen(false)}
+            onImport={handleImportData}
+            type={importType}
+            title={importType === 'our-products' ? '导入本品价格' : '导入竞品价格'}
+          />
+
+          {/* AI分析报告模态框 */}
+          <AIAnalysisReport
+            isOpen={aiReportOpen}
+            onClose={() => setAiReportOpen(false)}
+            data={competitorData}
+            selectedLocation={selectedLocation}
+            selectedBrand={selectedBrand}
+          />
+
+          {/* 通知组件 */}
+          {notification && (
+            <div className="fixed top-4 right-4 z-50">
+              <div className={`rounded-lg p-4 shadow-lg ${
+                notification.type === 'success'
+                  ? 'bg-green-50 border border-green-200'
+                  : 'bg-red-50 border border-red-200'
+              }`}>
+                <div className="flex items-center">
+                  {notification.type === 'success' ? (
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+                  )}
+                  <span className={`text-sm font-medium ${
+                    notification.type === 'success' ? 'text-green-800' : 'text-red-800'
+                  }`}>
+                    {notification.message}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
