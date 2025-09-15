@@ -133,7 +133,13 @@ export const mockCustomerFeedback: CustomerFeedback[] = [
     urgency: 'high',
     summary: '包装破损导致产品变质，客服响应不及时',
     status: 'pending',
-    createdAt: '2025-08-30T14:30:00Z'
+    createdAt: '2025-08-30T14:30:00Z',
+    // 新增字段
+    aiTags: ['产品质量', '服务态度'],
+    detailedContent: '客户反馈在第二次购买后发现产品包装破损，导致内装火腿肠出现变质现象，同时客服响应速度过慢，影响客户体验。',
+    aiSuggestion: '1.立即对客户进行退款补偿；2.检查产品包装流程，加强质量控制；3.培训客服团队，提高响应速度。',
+    submitLocation: '利客来城阳门店',
+    submitTime: '2025-08-30T14:30:00Z'
   },
   {
     id: '2',
@@ -146,7 +152,13 @@ export const mockCustomerFeedback: CustomerFeedback[] = [
     urgency: 'low',
     summary: '客户对产品和服务满意，有回购意愿',
     status: 'resolved',
-    createdAt: '2025-08-30T16:20:00Z'
+    createdAt: '2025-08-30T16:20:00Z',
+    // 新增字段
+    aiTags: ['产品质量', '服务态度'],
+    detailedContent: '客户对产品口感、包装质量以及物流服务都表示满意，并明确表示会继续购买。',
+    aiSuggestion: '继续保持产品质量和服务水平，可向该客户推送相关产品促销活动，提高客户粘性。',
+    submitLocation: '家乐福市北门店',
+    submitTime: '2025-08-30T16:20:00Z'
   },
   {
     id: '3',
@@ -160,7 +172,13 @@ export const mockCustomerFeedback: CustomerFeedback[] = [
     summary: '产品中发现异物（头发），严重影响食品安全',
     status: 'in_progress',
     processedBy: '客服小王',
-    createdAt: '2025-08-30T18:45:00Z'
+    createdAt: '2025-08-30T18:45:00Z',
+    // 新增字段
+    aiTags: ['产品质量'],
+    detailedContent: '客户在产品中发现异物（头发），严重影响食品安全和食用体验，客户表示不会再次购买。',
+    aiSuggestion: '1.立即启动食品安全事件应急预案；2.对相关批次产品进行全面检查；3.加强生产环境卫生管理；4.主动联系客户道歉并进行补偿。',
+    submitLocation: '大润发芝罘门店',
+    submitTime: '2025-08-30T18:45:00Z'
   }
 ]
 
@@ -257,6 +275,47 @@ export function generateExtendedCustomerFeedback(): CustomerFeedback[] {
     const date = new Date()
     date.setDate(date.getDate() - Math.floor(Math.random() * 30)) // 最近30天内
 
+    // 生成AI标签
+    const aiTagsPool = ['产品质量', '产品价格', '服务态度', '其他建议']
+    const generateAiTags = () => {
+      const count = Math.floor(Math.random() * 3) + 1 // 1-3个标签
+      const shuffled = [...aiTagsPool].sort(() => 0.5 - Math.random())
+      return shuffled.slice(0, count) as ('产品质量' | '产品价格' | '服务态度' | '其他建议')[]
+    }
+
+    // 生成建议详情
+    const generateDetailedContent = (comment: string, sentiment: string, product: string) => {
+      if (sentiment === 'positive') {
+        return `客户对${product}表示满意，对产品质量、服务体验等给出正面评价。`
+      } else if (sentiment === 'negative') {
+        return `客户对${product}反馈了问题，主要问题包括：${comment.slice(0, 50)}...需要及时处理和改进。`
+      } else {
+        return `客户对${product}的反馈表现中立，有一定的改进空间。`
+      }
+    }
+
+    // 生成AI建议
+    const generateAiSuggestion = (sentiment: string, tags: string[]) => {
+      if (sentiment === 'positive') {
+        return '继续保持产品质量和服务水平，可向该客户推送相关产品促销活动。'
+      } else if (sentiment === 'negative') {
+        const suggestions = []
+        if (tags.includes('产品质量')) suggestions.push('加强产品质量检查和控制')
+        if (tags.includes('产品价格')) suggestions.push('重新评估产品定价策略')
+        if (tags.includes('服务态度')) suggestions.push('加强客服培训，提高服务响应速度')
+        return suggestions.length > 0 ? suggestions.join('；') : '立即联系客户处理问题，并进行适当补偿'
+      } else {
+        return '持续关注客户反馈，主动改进产品和服务质量。'
+      }
+    }
+
+    // 地点池
+    const locations = ['利客来城阳门店', '家乐福市北门店', '大润发芝罘门店', '银座历下门店', '华联即墨门店', '沃尔玛李沧门店', '華润万家市北门店']
+
+    const currentAiTags = generateAiTags()
+    const detailedContent = generateDetailedContent(comment, sentiment, product)
+    const aiSuggestion = generateAiSuggestion(sentiment, currentAiTags)
+
     extendedData.push({
       id: (i + 100).toString(),
       platform,
@@ -270,7 +329,13 @@ export function generateExtendedCustomerFeedback(): CustomerFeedback[] {
       status,
       processedBy: status !== 'pending' ? ['客服小王', '客服小李', '客服小张'][Math.floor(Math.random() * 3)] : undefined,
       createdAt: date.toISOString(),
-      productName: product
+      productName: product,
+      // 新增字段
+      aiTags: currentAiTags,
+      detailedContent,
+      aiSuggestion,
+      submitLocation: locations[Math.floor(Math.random() * locations.length)],
+      submitTime: date.toISOString()
     })
   }
 

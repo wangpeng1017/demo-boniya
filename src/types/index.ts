@@ -78,6 +78,12 @@ export interface CustomerFeedback {
   processedAt?: string
   createdAt: string
   productName?: string
+  // 新增字段
+  aiTags?: ('产品质量' | '产品价格' | '服务态度' | '其他建议')[]
+  detailedContent?: string  // 建议详情
+  aiSuggestion?: string     // AI建议
+  submitLocation?: string   // 提交地点
+  submitTime?: string       // 提交时间
 }
 
 export interface FeedbackAnalysis {

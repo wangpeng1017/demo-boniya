@@ -2,6 +2,7 @@
 
 import { Brain } from 'lucide-react'
 import { CustomerFeedback } from '@/types'
+import { formatDateTime } from '@/lib/utils'
 
 interface FeedbackDetailsTabProps {
   feedbackData: CustomerFeedback[]
@@ -23,7 +24,7 @@ export default function FeedbackDetailsTab({
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">线下信息反馈详情</h3>
-            <p className="text-sm text-gray-600 mt-1">负面反馈和紧急问题需要及时处理</p>
+            <p className="text-sm text-gray-600 mt-1">AI标签分类、建议详情、AI建议与提交信息</p>
           </div>
           <button
             onClick={handleBatchAiInsight}
@@ -38,12 +39,13 @@ export default function FeedbackDetailsTab({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">反馈ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">平台来源</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">问题摘要</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">紧急程度</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">处理状态</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">反馈ID</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">AI标签</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">建议详情</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">建议摘要</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">AI建议</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">提交地点</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">提交时间</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -51,51 +53,40 @@ export default function FeedbackDetailsTab({
                 .filter((item: any) => item.sentiment === 'negative' || item.urgency === 'high')
                 .map((item: any) => (
                 <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                     {item.id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {item.platform}
-                    </span>
+                  <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-900">
+                    <div className="flex flex-wrap gap-1 max-w-xs">
+                      {(item.aiTags || []).length > 0 ? (
+                        item.aiTags.map((tag: string, idx: number) => (
+                          <span key={idx} className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">{tag}</span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400">未标注</span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                  <td className="px-4 py-3 text-sm text-gray-900 max-w-md">
+                    <div className="truncate" title={item.detailedContent || item.originalComment}>
+                      {item.detailedContent || item.originalComment}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900 max-w-sm">
                     <div className="truncate" title={item.summary}>
                       {item.summary}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getUrgencyStyle(item.urgency)}`}>
-                      {item.urgency === 'high' ? '高' : item.urgency === 'medium' ? '中' : '低'}
-                    </span>
+                  <td className="px-4 py-3 text-sm text-gray-900 max-w-sm">
+                    <div className="truncate" title={item.aiSuggestion || ''}>
+                      {item.aiSuggestion || '—'}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      item.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {item.status === 'pending' ? '待处理' :
-                       item.status === 'in_progress' ? '处理中' : '已处理'}
-                    </span>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    {item.submitLocation || '—'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {item.status === 'pending' && (
-                      <button
-                        onClick={() => {
-                          const details = prompt('请输入处理详情:')
-                          if (details) {
-                            handleProcessFeedback(item.id, details)
-                          }
-                        }}
-                        className="text-primary-600 hover:text-primary-700 font-medium"
-                      >
-                        处理
-                      </button>
-                    )}
-                    {item.status === 'resolved' && (
-                      <span className="text-green-600 font-medium">已完成</span>
-                    )}
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    {formatDateTime(item.submitTime || item.createdAt)}
                   </td>
                 </tr>
               ))}
@@ -105,7 +96,7 @@ export default function FeedbackDetailsTab({
 
         {feedbackData.filter((item: any) => item.sentiment === 'negative' || item.urgency === 'high').length === 0 && (
           <div className="px-6 py-12 text-center">
-            <p className="text-gray-500">暂无需要紧急处理的反馈信息</p>
+            <p className="text-gray-500">暂无需要展示的线下信息反馈</p>
           </div>
         )}
       </div>
