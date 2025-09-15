@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Send, Ruler, MapPin, Brain, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react'
-import AIAnalysisReport from '@/components/competitor-analysis/AIAnalysisReport'
+import PriceAdjustmentAI from '@/components/competitor-analysis/PriceAdjustmentAI'
 
 interface AdjustRow {
   id: number
@@ -61,22 +61,6 @@ export default function MeasureAdjustPage() {
     showNotification('success', `已将${adjustCount}条调价方案推送至BPM，待审批`)
   }
 
-  // 为AI分析创建模拟数据
-  const createMockCompetitorData = () => {
-    return filtered.map(row => ({
-      id: `mock-${row.id}`,
-      captureDate: new Date().toISOString(),
-      location: row.region,
-      brand: '喜旺',
-      productName: row.rivalName,
-      specifications: '1kg',
-      price: row.rivalPricePerKg,
-      rawText: `${row.rivalName} ${row.rivalPricePerKg}元/kg`,
-      sourceType: 'manual' as const,
-      uploadedBy: '系统',
-      editedAt: new Date().toISOString()
-    }))
-  }
 
   return (
     <div className="p-6 space-y-4">
@@ -147,13 +131,12 @@ export default function MeasureAdjustPage() {
         </table>
       </div>
 
-      {/* AI分析报告模态框 */}
-      <AIAnalysisReport
+      {/* AI调价建议模态框 */}
+      <PriceAdjustmentAI
         isOpen={aiReportOpen}
         onClose={() => setAiReportOpen(false)}
-        data={createMockCompetitorData()}
+        data={filtered}
         selectedLocation={regionFilter}
-        selectedBrand={'全部'}
       />
 
       {/* 通知组件 */}
