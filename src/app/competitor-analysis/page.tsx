@@ -24,8 +24,12 @@ interface OCRResult {
   processedAt?: string
 }
 
+import RegionDataView from '@/components/competitor-analysis/RegionDataView'
+import ProductPriceView from '@/components/competitor-analysis/ProductPriceView'
+import MeasureAdjustView from '@/components/competitor-analysis/MeasureAdjustView'
+
 export default function CompetitorAnalysisPage() {
-  const [activeTab, setActiveTab] = useState<'collect' | 'analyze'>('collect')
+  const [activeTab, setActiveTab] = useState<'collect' | 'analyze' | 'region' | 'product' | 'measure'>('collect')
   const [competitorData, setCompetitorData] = useState<CompetitorPrice[]>(mockCompetitorPrices)
   const [ocrResults, setOcrResults] = useState<OCRResult[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
@@ -246,24 +250,36 @@ export default function CompetitorAnalysisPage() {
               <Search className="w-4 h-4 inline mr-2" />
               数据分析
             </button>
-            <a
-              href="/competitor-analysis/region-data"
-              className="py-4 px-1 text-sm text-gray-500 hover:text-gray-700"
+            <button
+              onClick={() => setActiveTab('region')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'region'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
             >
               区域竞品数据
-            </a>
-            <a
-              href="/competitor-analysis/product-price"
-              className="py-4 px-1 text-sm text-gray-500 hover:text-gray-700"
+            </button>
+            <button
+              onClick={() => setActiveTab('product')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'product'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
             >
               产品价格分析
-            </a>
-            <a
-              href="/competitor-analysis/measure-adjust"
-              className="py-4 px-1 text-sm text-gray-500 hover:text-gray-700"
+            </button>
+            <button
+              onClick={() => setActiveTab('measure')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'measure'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
             >
               计量价格调整
-            </a>
+            </button>
           </nav>
         </div>
 
@@ -580,11 +596,30 @@ export default function CompetitorAnalysisPage() {
                       })}
                     </tbody>
                   </table>
-                </div>
-              </div>
+        </div>
+
+          {activeTab === 'region' && (
+            <div className="mt-4">
+              <RegionDataView />
+            </div>
+          )}
+
+          {activeTab === 'product' && (
+            <div className="mt-4">
+              <ProductPriceView />
+            </div>
+          )}
+
+          {activeTab === 'measure' && (
+            <div className="mt-4">
+              <MeasureAdjustView />
             </div>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
       </div>
 
       {/* 数据编辑模态框 */}
